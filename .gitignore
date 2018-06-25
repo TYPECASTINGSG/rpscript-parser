@@ -73,4 +73,9 @@ src/antlr/grammar/*
 src/core/*.d.ts
 src/core/*.js
 
+src/commands/*.d.ts
+src/commands/*.js
+
+example/**
+
 .rpscript

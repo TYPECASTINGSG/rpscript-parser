@@ -1,5 +1,5 @@
 import {Deferred} from "ts-deferred";
-import {Logger} from '../core/logger';
+// import {Logger} from '../core/logger';
 import fs from 'fs';
 import R from 'ramda';
 import {ParserRuleContext} from 'antlr4ts';
@@ -60,7 +60,7 @@ setTimeout(main, 500);
 
   constructor(defer:Deferred<any>,filepath:string, parser:RPScriptParser){
     this.deferred = defer;
-    this.logger = Logger.getInstance();
+    // this.logger = Logger.getInstance();
     this.filepath = filepath;
     this.parseTreeProperty = new ParseTreeProperty();
     this.scope = "root";
@@ -74,8 +74,8 @@ setTimeout(main, 500);
   public enterProgram(ctx: ProgramContext) : void{
   }
   public exitProgram(ctx: ProgramContext) : void{
-    
-    if(ctx.exception) this.deferred.reject(ctx.exception)
+    if(ctx.exception) throw ctx.exception;
+    // if(ctx.exception) this.deferred.reject(ctx.exception)
     else {
       this.getAllIncludeContents().then( fnContents => {
         this.content.fullContent += this.globalEventDeclare;

@@ -1,5 +1,5 @@
 import fs from 'fs';
-import {Logger} from './logger';
+// import {Logger} from './logger';
 import R from 'ramda';
 import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
 import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
@@ -18,12 +18,10 @@ import { Linter, Configuration, LintResult } from "tslint";
 import { EventEmitter } from 'events';
 
 var _eval = require('eval');
-import {RpsContext} from './actions';
-import * as api from './actions';
+import {RpsContext} from 'rpscript-interface';
 import {TranspileContent} from '../antlr/RpsListener';
 
 import {InvalidKeywordException} from '../antlr/InvalidKeywordException';
-// import {Translator} from './translator';
 
 export interface RpsMainConfig{
     outputDir?:string;
@@ -35,7 +33,7 @@ export interface RpsMainConfig{
 export class Runner{
     config:RpsMainConfig;
     runnerListener:EventEmitter;
-    l:Logger;
+    // l:Logger;
 
     replSvr;
 
@@ -49,7 +47,7 @@ export class Runner{
             fs.mkdirSync(this.config['outputDir']+'/logs');
         }
 
-        this.l = Logger.getInstance();
+        // this.l = Logger.getInstance();
     }
 
     //if skip run, return string, also return eventemitter
@@ -68,17 +66,17 @@ export class Runner{
 
         this.runnerListener = await _eval(tsContent,context,true);
 
-        this.l.createRunnerLogger( this.getFileName(filepath) );
+        // this.l.createRunnerLogger( this.getFileName(filepath) );
 
 
         this.runnerListener.on('runner.start', (...params) => {
-            this.l.runnerLogger.info('started');
+            // this.l.runnerLogger.info('started');
         });
         this.runnerListener.on('runner.end', (...params) => {
-            this.l.runnerLogger.info('ended');
+            // this.l.runnerLogger.info('ended');
         });
         this.runnerListener.on('action', (...params) => {
-            this.l.runnerLogger.info(`action : ${params}`);
+            // this.l.runnerLogger.info(`action : ${params}`);
         });
 
         return Promise.resolve(this.runnerListener);
@@ -108,7 +106,7 @@ export class Runner{
     }
 
     initializeContext(context) {
-        context.api = api;
+        // context.api = api; //default
         context.RpsContext = RpsContext;
         context.EventEmitter = EventEmitter;
     
@@ -124,14 +122,14 @@ export class Runner{
         let inputStream = new ANTLRInputStream(content);
         let lexer = new RpsTranspileLexer(inputStream);
 
-        // lexer.removeErrorListeners();
+        lexer.removeErrorListeners();
 
         let tokenStream = new CommonTokenStream(lexer);
         let parser = new RPScriptParser(tokenStream);
 
         // DEPRECATED : parser.errorHandler = new RpsErrorStrategy;
 
-        // parser.removeErrorListeners();
+        parser.removeErrorListeners();
         parser.addErrorListener(new ErrorCollectorListener);
 
         try{
@@ -142,10 +140,13 @@ export class Runner{
 
             return d.promise;
         }catch(err){
+            console.log('error indeed.....');
             if(err instanceof InvalidKeywordException)
                 console.error(err+' : invalid keyword');
             else
                 console.error('some other error');
+
+            return Promise.reject(err);
         }
     }
 
