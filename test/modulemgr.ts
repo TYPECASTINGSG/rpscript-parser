@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import {ModuleMgr} from '../src/core/modulemgr';
 
 
-describe('Module Manager', () => {
+describe.skip('Module Manager', () => {
 
   xit('should install plugin', async () => {
     let mgr = new ModuleMgr;
@@ -15,17 +15,11 @@ describe('Module Manager', () => {
 
   }).timeout(0);
 
-  xit('should extract module info', async() => {
-    let mgr = new ModuleMgr
-    let result = await mgr.storeModuleInfo('rpscript-api-notifier');
-    
-    console.log( JSON.stringify(result) );
-  });
-
   it('helper',async()=>{
     let mgr = new ModuleMgr;
     // mgr.configStore.delete('rpscript-api-notifier');
-    console.log( mgr.configStore.all );
+    console.log( mgr.listModuleNames() );
+    console.log( mgr.listModuleFull() );
     // mgr.configStore.clear();
   })
 

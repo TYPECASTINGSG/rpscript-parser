@@ -11,6 +11,7 @@ CommentContext, IfStatementContext , NamedFnContext, ActionContext, AnonFnContex
 import {ParseTreeProperty} from 'antlr4ts/tree';
 import {RPScriptParser} from '../antlr/grammar/RPScriptParser';
 
+import {KeywordsMgr} from '../core/keywordsmgr';
 import {Runner} from '../core/runner';
 import { InvalidKeywordException } from "./InvalidKeywordException";
 
@@ -58,6 +59,8 @@ setTimeout(main, 500);
   includeContent:IncludeContent[];
   parser:RPScriptParser;
 
+  keywordMgr:KeywordsMgr;
+
   constructor(defer:Deferred<any>,filepath:string, parser:RPScriptParser){
     this.deferred = defer;
     // this.logger = Logger.getInstance();
@@ -69,6 +72,7 @@ setTimeout(main, 500);
       mainContent:"", fullContent:"",fnContent:""
     }
     this.includeContent = [];
+    this.keywordMgr = new KeywordsMgr;
   }
 
   public enterProgram(ctx: ProgramContext) : void{
@@ -126,7 +130,9 @@ setTimeout(main, 500);
   }
 
   public enterAction(ctx:ActionContext) : void {
-    // throw new InvalidKeywordException('WTF : '+ctx.WORD().text);
+    if(!this.keywordMgr.isValidKeyword(ctx.WORD().text))
+      throw new InvalidKeywordException(ctx.WORD().text);
+
     this.parseTreeProperty.set(ctx,`\t${ctx.WORD().text}`);
   }
   public exitAction(ctx:ActionContext) : void {

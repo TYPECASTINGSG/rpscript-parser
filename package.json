@@ -20,7 +20,8 @@
     "build": "tsc",
     "start": "node ./build/index.js",
     "test": "mocha -r ts-node/register test/**.ts",
-    "antlr4ts": "antlr4ts src/antlr/grammar/RPScript.g4"
+    "antlr4ts": "antlr4ts src/antlr/grammar/RPScript.g4",
+    "publish": "tsc && npm publish"
   },
   "dependencies": {
     "antlr4ts": "^0.4.1-alpha.0",
@@ -28,8 +29,7 @@
     "eval": "^0.1.2",
     "npm-programmatic": "0.0.10",
     "ramda": "^0.25.0",
-    "rpscript-api-notifier": "^0.1.2",
-    "rpscript-interface": "^0.2.0",
+    "rpscript-interface": "^0.2.1",
     "ts-deferred": "^1.0.4",
     "tslint": "^5.10.0"
   },
