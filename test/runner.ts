@@ -4,13 +4,11 @@ import 'mocha';
 import {Runner} from '../src/core/runner';
 
 
-// describe.skip('Runner', () => {
-//   xit('create a folder .rpscript', async () => {
-//     let runner = new Runner();
-//     // let result = await runner.compile('./test/fixtures/test.rps');
-//     c.expect(fs.existsSync('.rpscript')).to.be.true;
-//   });
-
+describe('Runner', () => {
+  it.only('create a folder .rpscript', async () => {
+    let runner = new Runner({});
+  });
+});
 //   xit('should run', () => {
 //     let runner = new Runner();
 //     runner.run(process.cwd()+'/.rpscript/test.ts');

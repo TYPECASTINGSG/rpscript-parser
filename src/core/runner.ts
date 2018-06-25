@@ -38,7 +38,7 @@ export class Runner{
     replSvr;
 
     constructor(config:RpsMainConfig){
-        let defaultConfig = JSON.parse(fs.readFileSync(`${process.cwd()}/rpsconfig.default.json`,'utf-8'));
+        let defaultConfig = JSON.parse(fs.readFileSync(`${__dirname}/../../rpsconfig.default.json`,'utf-8'));
         this.config = R.merge(defaultConfig, config);
         
         
