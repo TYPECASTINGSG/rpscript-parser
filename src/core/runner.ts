@@ -1,5 +1,4 @@
 import fs from 'fs';
-// import {Logger} from './logger';
 import R from 'ramda';
 import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
 import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
@@ -10,7 +9,7 @@ import {RpsTranspileLexer} from '../antlr/RpsTranspileLexer';
 import {RPScriptListener} from '../antlr/grammar/RPScriptListener';
 
 import {RpsTranspileListener} from '../antlr/RpsListener';
-import {ErrorCollectorListener,RpsErrorStrategy} from '../antlr/RpsErrorHandling';
+import {ErrorCollectorListener} from '../antlr/RpsErrorHandling';
 
 import {Deferred} from "ts-deferred";
 
@@ -21,7 +20,8 @@ var _eval = require('eval');
 import {RpsContext} from 'rpscript-interface';
 import {TranspileContent} from '../antlr/RpsListener';
 
-import {InvalidKeywordException} from '../antlr/InvalidKeywordException';
+import {ModuleMgr} from './modulemgr';
+
 
 export interface RpsMainConfig{
     outputDir?:string;
@@ -29,125 +29,110 @@ export interface RpsMainConfig{
     skipOutputTS?:boolean;
     skipRun?:boolean;
 }
+export interface ExecResult {
+    transpile:TranspileContent,
+    lint:LintResult
+}
 
-export class Runner{
+export class Runner extends EventEmitter{
+    static readonly TRANSPILE_EVT = "runner.transpile";
+    static readonly LINT_EVT = "runner.linted";
+    static readonly COMPILED_EVT = "runner.compiled";
+    static readonly START_EVT = "runner.start";
+    static readonly END_EVT = "runner.end";
+    static readonly ACTION_EVT = "action";
+
     config:RpsMainConfig;
     runnerListener:EventEmitter;
-    // l:Logger;
-
-    replSvr;
 
     constructor(config:RpsMainConfig){
+        super();
         let defaultConfig = JSON.parse(fs.readFileSync(`${__dirname}/../../rpsconfig.default.json`,'utf-8'));
         this.config = R.merge(defaultConfig, config);
-        
-        
+                
         if(!fs.existsSync(this.config['outputDir'])) {
             fs.mkdirSync(this.config['outputDir']);
             fs.mkdirSync(this.config['outputDir']+'/logs');
         }
-
-        // this.l = Logger.getInstance();
     }
 
-    //if skip run, return string, also return eventemitter
-    //process: 1. compile to TS (antlr) , 2. linting , 3. eval (require)
-    // compile time handling 3 steps
-    //run time handling
-    async execute (filepath:string) :Promise<EventEmitter|string>{
+    async execute (filepath:string) :Promise<ExecResult>{
         let rpsContent = fs.readFileSync(filepath,'utf8');
 
-        let tsContent = await this.compile(filepath,rpsContent,false);
-        let context = this.initializeContext({});
+        let lintResult:LintResult = null;
 
-        if(!this.config.skipOutputTS) fs.writeFileSync('.rpscript/temp.ts',tsContent);
-
-        if(this.config.skipRun) return Promise.resolve(tsContent);
-
-        this.runnerListener = await _eval(tsContent,context,true);
-
-        // this.l.createRunnerLogger( this.getFileName(filepath) );
-
-
-        this.runnerListener.on('runner.start', (...params) => {
-            // this.l.runnerLogger.info('started');
-        });
-        this.runnerListener.on('runner.end', (...params) => {
-            // this.l.runnerLogger.info('ended');
-        });
-        this.runnerListener.on('action', (...params) => {
-            // this.l.runnerLogger.info(`action : ${params}`);
-        });
-
-        return Promise.resolve(this.runnerListener);
-    }
-
-
-
-    //involve 2 steps : convertToTS , then Linting
-    async compile (filepath:string, rpsContent:string, isRepl:boolean) :Promise<string>{
-        let result = await this.convertToTS(filepath, rpsContent, isRepl);
+        let result = await this.convertToTS(filepath, rpsContent);
         let tsContent = result.fullContent;
-        
+
+        this.emit(Runner.TRANSPILE_EVT,result);
+
         if(!this.config.skipLinting) {
-            let lintResult = this.linting(tsContent);
-        
-            this.printLintingResult(lintResult);
+            lintResult = this.linting(tsContent);
 
-            if(lintResult.errorCount>0)
-                return Promise.reject(lintResult);
+            this.emit(Runner.LINT_EVT, lintResult);
+
+            if(lintResult.errorCount>0) throw Error('linting error');
         }
+
+        let context = await this.initializeContext();
+
+        this.emit(Runner.COMPILED_EVT , { transpile:result, lint:lintResult });
         
-        return Promise.resolve(tsContent);
+        if(!this.config.skipRun){
+            this.runnerListener = await _eval(tsContent,context,true);
+
+            this.runnerListener.on(Runner.START_EVT, (...params) => this.emit(Runner.START_EVT,params) );
+            this.runnerListener.on(Runner.END_EVT, (...params) => this.emit(Runner.END_EVT,params) );
+            this.runnerListener.on(Runner.ACTION_EVT, (...params) => this.emit(Runner.ACTION_EVT,params) );    
+        }
+
+        return { transpile:result, lint:lintResult };
     }
 
-    printLintingResult (result:LintResult) {
-        // console.log(result);
-    }
 
-    initializeContext(context) {
-        // context.api = api; //default
-        context.RpsContext = RpsContext;
-        context.EventEmitter = EventEmitter;
+    async initializeContext() {
+        let modMgr = new ModuleMgr
+        let context = await modMgr.loadModuleObjs();
+
+        context['RpsContext'] = RpsContext;
+        context['EventEmitter'] = EventEmitter;
     
-        context.$CONTEXT = new RpsContext();
-        context.$RESULT = null;
+        context['$CONTEXT'] = new RpsContext();
+        context['$RESULT'] = null;
 
         return context;
     }
 
-    async convertToTS(filepath:string, content:string, isRepl:boolean) : Promise<TranspileContent> {
+    convertToTS(filepath:string, content:string) : Promise<TranspileContent> {
         let d = new Deferred<TranspileContent>();
 
+        let lexer = this.setupLexer(content);
+        let parser = this.setupParser(lexer);
+
+        let intentListener:RPScriptListener = new RpsTranspileListener(d,filepath,parser);
+        let context = parser.program();
+
+        ParseTreeWalker.DEFAULT.walk(intentListener, context);
+
+        return d.promise;
+    }
+
+    private setupLexer (content:string) : RPScriptLexer {
         let inputStream = new ANTLRInputStream(content);
         let lexer = new RpsTranspileLexer(inputStream);
 
         lexer.removeErrorListeners();
 
+        return lexer;
+    }
+    private setupParser (lexer:RPScriptLexer) : RPScriptParser{
         let tokenStream = new CommonTokenStream(lexer);
         let parser = new RPScriptParser(tokenStream);
-
-        // DEPRECATED : parser.errorHandler = new RpsErrorStrategy;
 
         parser.removeErrorListeners();
         parser.addErrorListener(new ErrorCollectorListener);
 
-        try{
-            let intentListener:RPScriptListener = new RpsTranspileListener(d,filepath,parser);
-            let context = parser.program();
-    
-            ParseTreeWalker.DEFAULT.walk(intentListener, context);
-
-            return d.promise;
-        }catch(err){
-            console.log('error indeed.....');
-            if(err instanceof InvalidKeywordException)
-                console.error(err+' : invalid keyword');
-            else
-                console.error('some other error');
-
-            return Promise.reject(err);
-        }
+        return parser;
     }
 
     
@@ -165,17 +150,7 @@ export class Runner{
         
         linter.lint("", tsContent, configLoad.results);
         
-        const result = linter.getResult();
-
-        return result;
-    }
-
-
-    private getFileName (filepath:string) :string {
-        let index = filepath.lastIndexOf('/');
-        let dotIndex = filepath.lastIndexOf('.');
-        
-        return filepath.substring(index+1,dotIndex);
+        return linter.getResult();
     }
 
 }

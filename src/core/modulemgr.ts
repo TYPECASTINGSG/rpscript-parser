@@ -1,6 +1,10 @@
 import ConfigStore from 'configstore';
 import R from 'ramda';
+import {RpsContext} from 'rpscript-interface';
 import {KeywordsMgr} from './keywordsmgr';
+import { InvalidKeywordException } from '../antlr/InvalidKeywordException';
+import {ModAction} from './keywordsmgr';
+
 var npm = require ('npm-programmatic');
 
 export class ModuleMgr {
@@ -21,7 +25,7 @@ export class ModuleMgr {
 
             await npm.install([npmModuleName], {cwd:process.cwd(), save:false, global:false});
 
-            const mod = await import(npmModuleName);
+            const mod = await import(`../../../${npmModuleName}`);
             let modClazz = mod.default;
             let modName = modClazz['rpsModuleName'];
     
@@ -56,13 +60,51 @@ export class ModuleMgr {
         return JSON.stringify(this.configStore.all, null, 2);
     }
 
+    async loadModuleObjs () : Promise<Object>{
+        let allModules:Object = this.configStore.all;
+        let moduleNames = R.filter( m => m!=='$DEFAULT', R.keys(allModules));
+        let defaultConfig = this.configStore.get('$DEFAULT');
 
+        let moduleObj:Object = {};
 
-    // {
-    //     <actionName> : [{
-    //         moduleName:<name>, actionName:<name>,
-    //         param : [{paramName:'title',paramPattern},{paramName:'message',paramPattern}]
-    //     }]
-    // }
+        for(let i =0;i<moduleNames.length;i++){
+            let modName = allModules[ moduleNames[i] ].moduleName;
+            let mod = await import (`../../../${modName}`);
+
+            moduleObj[ moduleNames[i] ] = new mod.default;
+        }
+        moduleObj['api'] = this.genDefaultApi(moduleObj, defaultConfig);
+
+        return moduleObj;
+    }
+
+    // api(keyword, $CONTEXT , {} , "12121");
+    private genDefaultApi (modObj:Object, defaultConfig:Object) : Function{
+        return (keyword:string, ctx:RpsContext, opt:Object,  ...params) => {
+            if(!modObj[keyword]) throw new InvalidKeywordException("Keyword not found");
+
+            else {
+                let defSettings:ModAction[] = defaultConfig[keyword];
+                let bestFit:ModAction = this.selectBestFit (defSettings); 
+                let args = [ctx,opt].concat(params);
+
+                return modObj[bestFit.modName][bestFit.actionName].apply(this,args);
+            }
+        }
+    }
+
+    private selectBestFit(settings:ModAction[]) : ModAction{
+        return settings[0];
+    }
+    // "notifier": [
+    //     {
+    //       "modName": "notifier",
+    //       "actionName": "notify",
+    //       "defaultParamPatterns": {
+    //         "title": {}
+    //       }
+    //     }
+    //   ]
+  
 
 }

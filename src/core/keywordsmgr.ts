@@ -26,7 +26,13 @@ export class KeywordsMgr {
         let mod:Object = this.configStore.get(modName);
         let actionConfigs = this.extractClazzActions(modClazz);
         
-        mod['actions'] = actionConfigs;
+        mod['actions'] = {};
+        for(let index in actionConfigs){
+            let config = actionConfigs[index];
+            mod['actions'][config.actionName ] = actionConfigs[index];
+        }
+
+        this.configStore.set(modName,mod);
 
         let deflt = this.configStore.get('$DEFAULT');
         this.updateDefaults(modName, actionConfigs);

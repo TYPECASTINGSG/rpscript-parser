@@ -131,7 +131,7 @@ setTimeout(main, 500);
 
   public enterAction(ctx:ActionContext) : void {
     if(!this.keywordMgr.isValidKeyword(ctx.WORD().text))
-      throw new InvalidKeywordException(ctx.WORD().text);
+      throw new InvalidKeywordException('invalid keyword : '+ctx.WORD().text);
 
     this.parseTreeProperty.set(ctx,`\t${ctx.WORD().text}`);
   }
@@ -145,7 +145,11 @@ setTimeout(main, 500);
     let opt = this.parseOpt(ctx.optList().opt());
 
     let joinList = pList.join(' , ');
-    this.parseTreeProperty.set(ctx,`api.${this.capitalize(keyword)}($CONTEXT , ${opt} , ${joinList})`);
+
+    if(keyword.split('.').length>1){
+      this.parseTreeProperty.set(ctx,`${keyword.trim()}( $CONTEXT , ${opt} , ${joinList})`);
+    }else
+      this.parseTreeProperty.set(ctx,`api("${keyword.trim()}" , $CONTEXT , ${opt} , ${joinList})`);
 
     if(!this.hasActionParent(ctx)){
       if(this.hasFnParent(ctx)) this.content.fnContent += "\t"+this.parseTreeProperty.get(ctx)+";\n";
@@ -219,7 +223,7 @@ setTimeout(main, 500);
     this.addInclude(includeDir,content);
 
     let runner = new Runner({skipRun:true});
-    runner.convertToTS(includeDir,content,false).then(tsContent => {
+    runner.convertToTS(includeDir,content).then(tsContent => {
       this.updateIncludeTranslator(includeDir,tsContent.fnContent);
     }).catch(err => {
       console.error('HIGH ALERT!!!!!!');
