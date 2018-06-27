@@ -29,7 +29,7 @@
     "eval": "^0.1.2",
     "npm-programmatic": "0.0.10",
     "ramda": "^0.25.0",
-    "rpscript-interface": "^0.2.1",
+    "rpscript-interface": "^0.2.3",
     "ts-deferred": "^1.0.4",
     "tslint": "^5.10.0"
   },

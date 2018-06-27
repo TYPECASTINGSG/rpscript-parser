@@ -9,6 +9,7 @@ export interface ModAction {
     modName:string;
     actionName:string;
     defaultParamPatterns?:ActionDefaultParamPattern;
+    count?:number;
 }
 
 export class KeywordsMgr {

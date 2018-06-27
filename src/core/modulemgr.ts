@@ -85,16 +85,33 @@ export class ModuleMgr {
 
             else {
                 let defSettings:ModAction[] = defaultConfig[keyword];
-                let bestFit:ModAction = this.selectBestFit (defSettings); 
-                let args = [ctx,opt].concat(params);
 
+                let bestFit:ModAction = this.selectBestFit (defSettings, keyword, params);
+
+                let args = [ctx,opt].concat(params);
                 return modObj[bestFit.modName][bestFit.actionName].apply(this,args);
             }
         }
     }
 
-    private selectBestFit(settings:ModAction[]) : ModAction{
-        return settings[0];
+    private selectBestFit(settings:ModAction[], keywords:string, params:any[]) : ModAction{
+
+        let assignPriority = R.map( setting => {
+            let mVals = R.addIndex(R.mapObjIndexed)((reg, key, obj,index) => {
+                //@ts-ignore
+                let pValue = params[index];
+                //@ts-ignore
+                return new RegExp(reg).test(pValue);
+            }, setting.defaultParamPatterns);
+            
+            setting.count = R.filter(v=> !v, R.values(mVals)).length;
+
+            return setting;
+        } ,settings );
+
+        assignPriority = R.sortBy(R.prop('count')) (assignPriority);
+
+        return assignPriority[ assignPriority.length-1 ];
     }
     // "notifier": [
     //     {

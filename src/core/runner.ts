@@ -66,7 +66,8 @@ export class Runner extends EventEmitter{
 
         this.emit(Runner.TRANSPILE_EVT,result);
 
-        if(!this.config.skipLinting) {
+        // if(!this.config.skipLinting) {
+        if(false) {
             lintResult = this.linting(tsContent);
 
             this.emit(Runner.LINT_EVT, lintResult);
@@ -137,12 +138,11 @@ export class Runner extends EventEmitter{
 
     
     linting (tsContent:string) : LintResult {
-        const configurationFilename = "tsconfig.json";
+        // const configurationFilename = __dirname+"/../../tslint.json";
+        const configurationFilename = __dirname+"/../../tsconfig.tslint.json";
         const options = {
             fix:false,
-            formatter: "json",
-            rulesDirectory: "customRules/",
-            formattersDirectory: "customFormatters/"
+            formatter: "json"
         };
         
         const linter = new Linter(options);
