@@ -38,10 +38,12 @@ export class RpsTranspileListener implements RPScriptListener {
 }`;
 readonly runSect:string = `
 $CONTEXT.event.on ('action', (...params) => {
+    let evt = params[2];
+    if(evt === 'end') $CONTEXT.$RESULT = params[3];
+
     module.exports.emit('action',params);
-    //TODO: if 'action end' , $CONTEXT.$RESULT = params[params.length-1]
 });
-setTimeout(main, 500);
+setTimeout(main, 100);
 `
   logger;
 
@@ -149,7 +151,7 @@ setTimeout(main, 500);
     if(keyword.split('.').length>1){
       this.parseTreeProperty.set(ctx,`${keyword.trim()}( $CONTEXT , ${opt} , ${joinList})`);
     }else
-      this.parseTreeProperty.set(ctx,`api("${keyword.trim()}" , $CONTEXT , ${opt} , ${joinList})`);
+      this.parseTreeProperty.set(ctx,`await api("${keyword.trim()}" , $CONTEXT , ${opt} , ${joinList})`);
 
     if(!this.hasActionParent(ctx)){
       if(this.hasFnParent(ctx)) this.content.fnContent += "\t"+this.parseTreeProperty.get(ctx)+";\n";
