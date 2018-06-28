@@ -81,16 +81,13 @@ export class ModuleMgr {
     // api(keyword, $CONTEXT , {} , "12121");
     private genDefaultApi (modObj:Object, defaultConfig:Object) : Function{
         return (keyword:string, ctx:RpsContext, opt:Object,  ...params) => {
-            if(!modObj[keyword]) throw new InvalidKeywordException("Keyword not found");
+            let defSettings:ModAction[] = defaultConfig[keyword];
 
-            else {
-                let defSettings:ModAction[] = defaultConfig[keyword];
+            let bestFit:ModAction = this.selectBestFit (defSettings, keyword, params);
 
-                let bestFit:ModAction = this.selectBestFit (defSettings, keyword, params);
-
-                let args = [ctx,opt].concat(params);
-                return modObj[bestFit.modName][bestFit.actionName].apply(this,args);
-            }
+            let args = [ctx,opt].concat(params);
+            return modObj[bestFit.modName][bestFit.actionName].apply(this,args);
+            
         }
     }
 
