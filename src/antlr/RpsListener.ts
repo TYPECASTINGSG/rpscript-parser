@@ -131,7 +131,7 @@ setTimeout(main, 500);
 
   public enterAction(ctx:ActionContext) : void {
     if(!this.keywordMgr.isValidKeyword(ctx.WORD().text))
-      throw new InvalidKeywordException('invalid keyword : '+ctx.WORD().text);
+      throw new InvalidKeywordException(ctx);
 
     this.parseTreeProperty.set(ctx,`\t${ctx.WORD().text}`);
   }

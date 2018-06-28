@@ -30,16 +30,18 @@ export interface RpsMainConfig{
     skipRun?:boolean;
 }
 export interface ExecResult {
-    transpile:TranspileContent,
-    lint:LintResult
+    transpile?:TranspileContent,
+    lint?:LintResult
 }
 
 export class Runner extends EventEmitter{
     static readonly TRANSPILE_EVT = "runner.transpile";
+    static readonly TRANSPILE_ERR_EVT = "runner.transpile.err";
     static readonly LINT_EVT = "runner.linted";
     static readonly COMPILED_EVT = "runner.compiled";
     static readonly START_EVT = "runner.start";
     static readonly END_EVT = "runner.end";
+
     static readonly ACTION_EVT = "action";
 
     config:RpsMainConfig;
@@ -58,14 +60,39 @@ export class Runner extends EventEmitter{
 
     async execute (filepath:string) :Promise<ExecResult>{
         let rpsContent = fs.readFileSync(filepath,'utf8');
+        let transpileContent:TranspileContent;
 
-        let lintResult:LintResult = null;
+        try {
+            
+            transpileContent = await this.transpile(filepath,rpsContent);
 
-        let result = await this.convertToTS(filepath, rpsContent);
+        }catch(err){
+            // console.log('EXCEPTION ********'+err.constructor.name);
+            this.emit(Runner.TRANSPILE_ERR_EVT,err);
+            return {};
+        }
+        let tsContent = transpileContent.fullContent;
+
+        let lintResult = await this.lint(tsContent);
+ 
+        this.emit(Runner.COMPILED_EVT , { transpile:tsContent, lint:lintResult });
+        
+        if(!this.config.skipRun) this.run(tsContent);
+        
+
+        return { transpile:transpileContent, lint:lintResult };
+    }
+
+    private async transpile(filepath:string, filecontent:string):Promise<TranspileContent>{
+        let result = await this.convertToTS(filepath, filecontent);
         let tsContent = result.fullContent;
 
         this.emit(Runner.TRANSPILE_EVT,result);
 
+        return result;
+    }
+    private async lint (tsContent:string) :Promise<LintResult>{
+        let lintResult:LintResult = null;
         // if(!this.config.skipLinting) {
         if(false) {
             lintResult = this.linting(tsContent);
@@ -74,20 +101,17 @@ export class Runner extends EventEmitter{
 
             if(lintResult.errorCount>0) throw Error('linting error');
         }
-
+        return lintResult;
+    }
+    private async run (tsContent:string) {
         let context = await this.initializeContext();
+        this.runnerListener = await _eval(tsContent,context,true);
 
-        this.emit(Runner.COMPILED_EVT , { transpile:result, lint:lintResult });
-        
-        if(!this.config.skipRun){
-            this.runnerListener = await _eval(tsContent,context,true);
+        this.runnerListener.on(Runner.START_EVT, (...params) => this.emit(Runner.START_EVT,params) );
+        this.runnerListener.on(Runner.END_EVT, (...params) => this.emit(Runner.END_EVT,params) );
+        this.runnerListener.on(Runner.ACTION_EVT, (...params) => this.emit(Runner.ACTION_EVT,params) ); 
 
-            this.runnerListener.on(Runner.START_EVT, (...params) => this.emit(Runner.START_EVT,params) );
-            this.runnerListener.on(Runner.END_EVT, (...params) => this.emit(Runner.END_EVT,params) );
-            this.runnerListener.on(Runner.ACTION_EVT, (...params) => this.emit(Runner.ACTION_EVT,params) );    
-        }
-
-        return { transpile:result, lint:lintResult };
+        return this.runnerListener;
     }
 
 
@@ -120,7 +144,8 @@ export class Runner extends EventEmitter{
 
     private setupLexer (content:string) : RPScriptLexer {
         let inputStream = new ANTLRInputStream(content);
-        let lexer = new RpsTranspileLexer(inputStream);
+        // let lexer = new RpsTranspileLexer(inputStream);
+        let lexer = new RPScriptLexer(inputStream);
 
         lexer.removeErrorListeners();
 

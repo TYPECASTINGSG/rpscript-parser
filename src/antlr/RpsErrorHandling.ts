@@ -17,7 +17,7 @@ export class ErrorCollectorListener implements ANTLRErrorListener<any> {
       line: number, charPositionInLine: number, 
       msg: string, e: RecognitionException): void {
         
-        console.error("WEIRD STUFF");
+        console.error("SYNTAX ERROR : "+e.constructor.name);
     }
   
   }
