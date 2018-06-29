@@ -21,7 +21,8 @@ export class ModuleMgr {
     async installModule (npmModuleName:string) :Promise<void> {
 
         try{
-            if(!npmModuleName.trim().startsWith('rpscript-api-')) throw Error("invalid module name");
+            if(!npmModuleName.trim().startsWith('rpscript-api-')) 
+                npmModuleName = 'rpscript-api-' + npmModuleName.trim();
 
             await npm.install([npmModuleName], {cwd:process.cwd(), save:false, global:false});
 
@@ -39,6 +40,9 @@ export class ModuleMgr {
     }
     async removeModule (npmModuleName:string) : Promise<void>{
         try{
+            if(!npmModuleName.trim().startsWith('rpscript-api-')) 
+                npmModuleName = 'rpscript-api-' + npmModuleName.trim();
+
             await npm.uninstall([npmModuleName], {cwd:process.cwd(), save:false, global:false});
 
             let all = this.configStore.all;
@@ -56,8 +60,11 @@ export class ModuleMgr {
     listModuleNames () : string[]{
         return R.keys(this.configStore.all);
     }
-    listModuleFull () : string{
-        return JSON.stringify(this.configStore.all, null, 2);
+    listInstalledModules () : Object{
+        return this.configStore.all;
+    }
+    listAvailableModules () : Object{
+        return {};
     }
 
     async loadModuleObjs () : Promise<Object>{
