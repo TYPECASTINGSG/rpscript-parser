@@ -165,7 +165,8 @@ setTimeout(main, 100);
   public exitLiteral(ctx:LiteralContext) : void {
   }
   public enterVariable(ctx:VariableContext) : void {
-    this.parseTreeProperty.set(ctx,`${ctx.text}`);
+    let variable = ctx.text === '$RESULT' ? '$CONTEXT.$RESULT' : ctx.text;
+    this.parseTreeProperty.set(ctx,`${variable}`);
   }
   public exitVariable(ctx:VariableContext) : void {
   }
