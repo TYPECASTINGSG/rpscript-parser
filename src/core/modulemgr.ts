@@ -67,7 +67,7 @@ export class ModuleMgr {
         return {};
     }
 
-    async loadModuleObjs () : Promise<Object>{
+    async loadModuleObjs (rpsContext:RpsContext) : Promise<Object>{
         let allModules:Object = this.configStore.all;
         let moduleNames = R.filter( m => m!=='$DEFAULT', R.keys(allModules));
         let defaultConfig = this.configStore.get('$DEFAULT');
@@ -78,7 +78,7 @@ export class ModuleMgr {
             let modName = allModules[ moduleNames[i] ].moduleName;
             let mod = await import (`../../../${modName}`);
 
-            moduleObj[ moduleNames[i] ] = new mod.default;
+            moduleObj[ moduleNames[i] ] = new mod.default(rpsContext);
         }
         moduleObj['api'] = this.genDefaultApi(moduleObj, defaultConfig);
 

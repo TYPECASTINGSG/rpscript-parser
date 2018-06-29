@@ -117,12 +117,13 @@ export class Runner extends EventEmitter{
 
     async initializeContext() {
         let modMgr = new ModuleMgr
-        let context = await modMgr.loadModuleObjs();
+        let rpsContext = new RpsContext();
+        let context = await modMgr.loadModuleObjs(rpsContext);
 
         context['RpsContext'] = RpsContext;
         context['EventEmitter'] = EventEmitter;
     
-        context['$CONTEXT'] = new RpsContext();
+        context['$CONTEXT'] = rpsContext;
         context['$RESULT'] = null;
 
         return context;
