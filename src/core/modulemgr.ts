@@ -1,9 +1,7 @@
 import ConfigStore from 'configstore';
 import R from 'ramda';
-import {RpsContext} from 'rpscript-interface';
+import {RpsContext,RpsModuleModel,RpsActionModel} from 'rpscript-interface';
 import {KeywordsMgr} from './keywordsmgr';
-import { InvalidKeywordException } from '../antlr/InvalidKeywordException';
-import {ModAction} from './keywordsmgr';
 
 var npm = require ('npm-programmatic');
 
@@ -29,8 +27,10 @@ export class ModuleMgr {
             const mod = await import(`../../../${npmModuleName}`);
             let modClazz = mod.default;
             let modName = modClazz['rpsModuleName'];
+
+            let defaultConfig:RpsModuleModel = {name:modName,npmModuleName:npmModuleName,npmVersion:''};
     
-            this.configStore.set(modName,{ name:modName, moduleName:npmModuleName});
+            this.configStore.set(modName,defaultConfig);
 
             this.wordMgr.saveModuleKeywords(modName,modClazz);
 
@@ -70,62 +70,62 @@ export class ModuleMgr {
     async loadModuleObjs (rpsContext:RpsContext) : Promise<Object>{
         let allModules:Object = this.configStore.all;
         let moduleNames = R.filter( m => m!=='$DEFAULT', R.keys(allModules));
-        let defaultConfig = this.configStore.get('$DEFAULT');
 
         let moduleObj:Object = {};
 
+        //load all modules
         for(let i =0;i<moduleNames.length;i++){
             let modName = allModules[ moduleNames[i] ].moduleName;
             let mod = await import (`../../../${modName}`);
 
             moduleObj[ moduleNames[i] ] = new mod.default(rpsContext);
         }
-        moduleObj['api'] = this.genDefaultApi(moduleObj, defaultConfig);
+
+        moduleObj['api'] = this.genDefaultApi(moduleObj,rpsContext);
 
         return moduleObj;
     }
 
     // api(keyword, $CONTEXT , {} , "12121");
-    private genDefaultApi (modObj:Object, defaultConfig:Object) : Function{
-        return (keyword:string, ctx:RpsContext, opt:Object,  ...params) => {
-            let defSettings:ModAction[] = defaultConfig[keyword];
+    private genDefaultApi (modObj:Object,rpsContext:RpsContext) : Function{
 
-            let bestFit:ModAction = this.selectBestFit (defSettings, keyword, params);
+        return (keyword:string, ctx:RpsContext, opt:Object,  ...params) => {
+
+            let defSettings:RpsActionModel[] = rpsContext.getRuntimeDefault()[keyword];
+
+            let bestFit:RpsActionModel = this.selectBestFitByPriority (defSettings, keyword, params);
 
             let args = [ctx,opt].concat(params);
+
+            //modObject.module.action(ctx,opt,...params)
             return modObj[bestFit.modName][bestFit.actionName].apply(this,args);
             
         }
     }
 
-    private selectBestFit(settings:ModAction[], keywords:string, params:any[]) : ModAction{
-
-        let assignPriority = R.map( setting => {
-            let mVals = R.addIndex(R.mapObjIndexed)((reg, key, obj,index) => {
-                //@ts-ignore
-                let pValue = params[index];
-                //@ts-ignore
-                return new RegExp(reg).test(pValue);
-            }, setting.defaultParamPatterns);
-            
-            setting.count = R.filter(v=> !v, R.values(mVals)).length;
-
-            return setting;
-        } ,settings );
-
-        assignPriority = R.sortBy(R.prop('count')) (assignPriority);
-
-        return assignPriority[ assignPriority.length-1 ];
+    private selectBestFitByPriority(settings:RpsActionModel[], keywords:string, params:any[]) : RpsActionModel {
+        let sort = R.sortBy(R.prop('defaultPriority'));
+        return sort(settings)[settings.length-1];
     }
-    // "notifier": [
-    //     {
-    //       "modName": "notifier",
-    //       "actionName": "notify",
-    //       "defaultParamPatterns": {
-    //         "title": {}
-    //       }
-    //     }
-    //   ]
-  
 
 }
+
+    // private selectBestFitByParamPattern(settings:RpsActionModel[], keywords:string, params:any[]) : RpsActionModel{
+
+    //     let assignPriority = R.map( setting => {
+    //         let mVals = R.addIndex(R.mapObjIndexed)((reg, key, obj,index) => {
+    //             //@ts-ignore
+    //             let pValue = params[index];
+    //             //@ts-ignore
+    //             return new RegExp(reg).test(pValue);
+    //         }, setting.defaultParamPatterns);
+            
+    //         setting.count = R.filter(v=> !v, R.values(mVals)).length;
+
+    //         return setting;
+    //     } ,settings );
+
+    //     assignPriority = R.sortBy(R.prop('count')) (assignPriority);
+
+    //     return assignPriority[ assignPriority.length-1 ];
+    // }

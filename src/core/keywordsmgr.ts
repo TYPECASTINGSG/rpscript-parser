@@ -1,16 +1,7 @@
 import ConfigStore from 'configstore';
-import{ActionConfig,ActionDefaultParamPattern} from 'rpscript-interface';
+import{RpsActionModel, RpsModuleModel,RpsDefaultModel} from 'rpscript-interface';
 import R from 'ramda';
 
-export interface DefaultAction {
-    [name:string]: ModAction[]
-}
-export interface ModAction {
-    modName:string;
-    actionName:string;
-    defaultParamPatterns?:ActionDefaultParamPattern;
-    count?:number;
-}
 
 export class KeywordsMgr {
     readonly CONFIG_NAME = "rpscript";
@@ -24,58 +15,56 @@ export class KeywordsMgr {
     }
 
     saveModuleKeywords (modName:string, modClazz:Function) {
-        let mod:Object = this.configStore.get(modName);
-        let actionConfigs = this.extractClazzActions(modClazz);
+        let mod:RpsModuleModel = this.configStore.get(modName);
+        let actionConfigs:RpsActionModel[] = this.extractClazzActions(modClazz);
         
-        mod['actions'] = {};
-        for(let index in actionConfigs){
-            let config = actionConfigs[index];
-            mod['actions'][config.actionName ] = actionConfigs[index];
-        }
-
-        this.configStore.set(modName,mod);
-
-        let deflt = this.configStore.get('$DEFAULT');
+        this.updateModule(mod,actionConfigs);
+        
         this.updateDefaults(modName, actionConfigs);
     }
-// {
-//     keywordName: [ { modName:aa, actionName, { paramName1:REGEX, paramName2:REGEX}  } ]
-// }
-// actionConfig =  {actionName:'action', defaultName:'act', defaultParamPatterns:{title:/.*/} }
-    updateDefaults(modName:string, actionConfigs:ActionConfig[]){
-        let deflt:DefaultAction[] = this.configStore.get('$DEFAULT');
 
-        let actionsWithDefault = R.filter( config => !!config.defaultName , actionConfigs );
+    updateModule (mod:RpsModuleModel, actionConfigs:RpsActionModel[]) {
+        mod.actions = {};
+        for(let index in actionConfigs){
+            let config = actionConfigs[index];
+            mod.actions[config.actionName ] = actionConfigs[index];
+        }
+
+        this.configStore.set(mod.name,mod);
+    }
+
+    updateDefaults(modName:string, clazzActions:RpsActionModel[]){
+        let deflt:RpsDefaultModel = this.configStore.get('$DEFAULT');
+
+        let actionsWithDefault = R.filter( config => !!config.defaultName , clazzActions );
 
         actionsWithDefault.forEach( action => {
             let defaultName = action.defaultName;
-            let existingDefaultKeywords:string[] = R.keys(deflt);
 
-            let deflAction = {modName:modName, actionName:action.actionName, defaultParamPatterns:action.defaultParamPatterns};
-
-            if(R.contains(  defaultName , existingDefaultKeywords ) ) {
-                deflt[defaultName].push(deflAction);
-            }else {
-                deflt[defaultName] = [deflAction];
-            }
+            if(deflt[defaultName]) {
+                let newList = R.filter( a => a.modName !== action.modName, deflt[defaultName]);
+                newList.push(action);
+                deflt[defaultName] = newList;
+            }else deflt[defaultName] = [action];
+            
         });
 
         this.configStore.set('$DEFAULT',deflt);
     }
 
+    // iterate keywords
+    // filter away action list match modName
     removeModuleDefaults (modName:string) {
-        let deflt:DefaultAction[] = this.configStore.get('$DEFAULT');
-        let removed = R.map( dfWord => {
-            let vals = R.values(dfWord);
-            return R.filter( action => action['modName'] !== modName , vals );
-        }, deflt);
+        let deflts:RpsDefaultModel = this.configStore.get('$DEFAULT');
 
-        R.forEach( 
-            key => removed[key].length === 0 ? delete removed[key] : '',
-            R.keys(removed)
-        );
+        R.forEachObjIndexed((vals:RpsActionModel[],key:string) => {
+            let output:RpsActionModel[] = R.filter( action => action.modName !== modName , vals);
+            
+            if(output.length == 0) delete deflts[key];
+            else deflts[key] = output;
+        },deflts);
 
-        this.configStore.set('$DEFAULT',removed);
+        this.configStore.set('$DEFAULT',deflts);
     }
 
     getDefaultActions () {
@@ -83,8 +72,8 @@ export class KeywordsMgr {
     }
     
 
-    private extractClazzActions (modClazz:Function) : ActionConfig[]{
-        let actionConfigs:ActionConfig[] = [];
+    private extractClazzActions (modClazz:Function) : RpsActionModel[]{
+        let actionConfigs:RpsActionModel[] = [];
         let methods = Object.getOwnPropertyNames(modClazz.prototype);
 
         for(var i in methods){
