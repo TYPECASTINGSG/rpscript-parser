@@ -55,13 +55,7 @@ export class Runner extends EventEmitter{
 
     constructor(config:RpsMainConfig){
         super();
-        let defaultConfig = JSON.parse(fs.readFileSync(`${__dirname}/../../rpsconfig.default.json`,'utf-8'));
-        this.config = R.merge(defaultConfig, config);
-                
-        if(!fs.existsSync(this.config['outputDir'])) {
-            fs.mkdirSync(this.config['outputDir']);
-            fs.mkdirSync(this.config['outputDir']+'/logs');
-        }
+        this.config = config;   
     }
 
     async execute (filepath:string) :Promise<ExecResult>{
