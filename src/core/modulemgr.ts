@@ -7,6 +7,15 @@ import { EventEmitter } from 'events';
 
 export class ModuleMgr {
     readonly CONFIG_NAME = "rpscript";
+
+    static readonly MOD_INSTALLED_NPM_EVT = "runner.module.installed.npm";
+    static readonly MOD_INSTALLED_CONFIG_EVT = "runner.module.installed.config";
+    static readonly MOD_INSTALLED_ERROR_EVT = "runner.module.installed.error";
+
+    static readonly MOD_REMOVED_NPM_EVT = "runner.module.removed.npm";
+    static readonly MOD_REMOVED_CONFIG_EVT = "runner.module.removed.config";
+    static readonly MOD_REMOVED_ERROR_EVT = "runner.module.removed.error";
+
     configStore:ConfigStore;
 
     wordMgr:KeywordsMgr;
@@ -26,7 +35,7 @@ export class ModuleMgr {
 
             let installedInfo = await this.installFromNpm(npmModuleName);
 
-            this.event.emit('runner.module.installed.npm', installedInfo);
+            this.event.emit(ModuleMgr.MOD_INSTALLED_NPM_EVT, installedInfo);
     
 
             //save module info
@@ -42,13 +51,13 @@ export class ModuleMgr {
 
             let modInfo:RpsModuleModel = this.configStore.get(installedInfo['name']);
 
-            this.event.emit('runner.module.installed.config', modInfo);
+            this.event.emit(ModuleMgr.MOD_INSTALLED_CONFIG_EVT, modInfo);
 
             
             return modInfo;
 
         }catch(err){
-            this.event.emit('runner.module.installed.error',err);
+            this.event.emit(ModuleMgr.MOD_INSTALLED_ERROR_EVT,err);
             throw err;
         }
     }
@@ -71,7 +80,7 @@ export class ModuleMgr {
 
             let removeInfo = NpmModHelper.removeNpmModule(npmModuleName);
 
-            this.event.emit('runner.module.removed.npm',removeInfo);
+            this.event.emit(ModuleMgr.MOD_REMOVED_NPM_EVT,removeInfo);
 
 
             let removedMod = this.removeModuleConfig(npmModuleName);
@@ -79,10 +88,10 @@ export class ModuleMgr {
             this.wordMgr.removeModuleDefaults(removedMod['name']);
 
 
-            this.event.emit('runner.module.removed.config',removedMod);
+            this.event.emit(ModuleMgr.MOD_REMOVED_CONFIG_EVT,removedMod);
 
         }catch(err){
-            this.event.emit('runner.module.removed.error',err);
+            this.event.emit(ModuleMgr.MOD_REMOVED_ERROR_EVT,err);
             throw err;
         }
     }
@@ -113,7 +122,7 @@ export class ModuleMgr {
         //load all modules
         for(let i =0;i<moduleNames.length;i++){
             let module = allModules[ moduleNames[i] ];
-            let moduleName = module.moduleName;
+            let moduleName = module.npmModuleName;
 
             if(module.enabled) {
                 let mod = await import (`../../../${moduleName}`); //maybe. find node_module path

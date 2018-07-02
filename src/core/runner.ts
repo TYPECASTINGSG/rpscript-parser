@@ -39,16 +39,8 @@ export class Runner extends EventEmitter{
     static readonly TRANSPILE_ERR_EVT = "runner.transpile.err";
     static readonly LINT_EVT = "runner.linted";
     static readonly COMPILED_EVT = "runner.compiled";
-    
+
     static readonly MOD_LOADED_EVT = "runner.module.loaded";
-    static readonly MOD_INSTALLED_NPM_EVT = "runner.module.installed.npm";
-    static readonly MOD_INSTALLED_CONFIG_EVT = "runner.module.installed.config";
-    static readonly MOD_INSTALLED_ERROR_EVT = "runner.module.installed.error";
-
-    static readonly MOD_REMOVED_NPM_EVT = "runner.module.removed.npm";
-    static readonly MOD_REMOVED_CONFIG_EVT = "runner.module.removed.config";
-    static readonly MOD_REMOVED_ERROR_EVT = "runner.module.removed.error";
-
     static readonly MOD_DISABLED_EVT = "runner.module.disabled";
     
     static readonly START_EVT = "runner.start";
@@ -107,13 +99,13 @@ export class Runner extends EventEmitter{
     private async lint (tsContent:string) :Promise<LintResult>{
         let lintResult:LintResult = null;
         // if(!this.config.skipLinting) {
-        if(false) {
-            lintResult = this.linting(tsContent);
+        // if(false) {
+        //     lintResult = this.linting(tsContent);
 
-            this.emit(Runner.LINT_EVT, lintResult);
+        //     this.emit(Runner.LINT_EVT, lintResult);
 
-            if(lintResult.errorCount>0) throw Error('linting error');
-        }
+        //     if(lintResult.errorCount>0) throw Error('linting error');
+        // }
         return lintResult;
     }
     private async run (tsContent:string) {
@@ -130,6 +122,11 @@ export class Runner extends EventEmitter{
 
     async initializeContext() {
         let modMgr = new ModuleMgr
+        
+        modMgr.event.on(Runner.MOD_LOADED_EVT,(...params)=>this.emit(Runner.MOD_LOADED_EVT,params));
+        modMgr.event.on(Runner.MOD_DISABLED_EVT,(...params)=>this.emit(Runner.MOD_DISABLED_EVT,params));
+
+
         let rpsContext = new RpsContext();
         let context = await modMgr.loadModuleObjs(rpsContext);
 
