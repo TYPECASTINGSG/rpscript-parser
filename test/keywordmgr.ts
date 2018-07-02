@@ -8,7 +8,7 @@ import { ActionConfig } from 'rpscript-interface';
 
 describe('Keywords Manager', () => {
 
-  it('should update and remove default keywords', async () => {
+  xit('should update and remove default keywords', async () => {
     let mgr = new KeywordsMgr;
     mgr.configStore = new ConfigStore('rps-test-keymgr');
     mgr.configStore.clear();

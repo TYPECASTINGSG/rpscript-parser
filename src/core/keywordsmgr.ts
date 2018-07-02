@@ -16,7 +16,7 @@ export class KeywordsMgr {
 
     saveModuleKeywords (modName:string, modClazz:Function) {
         let mod:RpsModuleModel = this.configStore.get(modName);
-        let actionConfigs:RpsActionModel[] = this.extractClazzActions(modClazz);
+        let actionConfigs:RpsActionModel[] = this.extractClazzActions(modClazz,modName);
         
         this.updateModule(mod,actionConfigs);
         
@@ -42,9 +42,11 @@ export class KeywordsMgr {
             let defaultName = action.defaultName;
 
             if(deflt[defaultName]) {
-                let newList = R.filter( a => a.modName !== action.modName, deflt[defaultName]);
+                let newList = R.filter( a => a['modName'] !== action.modName, deflt[defaultName]);
+                
                 newList.push(action);
                 deflt[defaultName] = newList;
+
             }else deflt[defaultName] = [action];
             
         });
@@ -72,13 +74,17 @@ export class KeywordsMgr {
     }
     
 
-    private extractClazzActions (modClazz:Function) : RpsActionModel[]{
+    private extractClazzActions (modClazz:Function,modName:string) : RpsActionModel[]{
         let actionConfigs:RpsActionModel[] = [];
         let methods = Object.getOwnPropertyNames(modClazz.prototype);
 
         for(var i in methods){
-          let availConfig = modClazz.prototype[methods[i]]['rpsActionConfig'];
-          if(availConfig) actionConfigs.push(availConfig);
+          let availConfig:RpsActionModel = modClazz.prototype[methods[i]]['rpsActionConfig'];
+
+          if(availConfig) {
+            availConfig.modName = modName;
+            actionConfigs.push(availConfig);
+          }
         }
 
         return actionConfigs;

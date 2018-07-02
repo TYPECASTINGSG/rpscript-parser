@@ -2,8 +2,7 @@ import ConfigStore from 'configstore';
 import R from 'ramda';
 import {RpsContext,RpsModuleModel,RpsActionModel} from 'rpscript-interface';
 import {KeywordsMgr} from './keywordsmgr';
-
-var npm = require ('npm-programmatic');
+import {NpmModHelper} from '../helper/npmMod';
 
 export class ModuleMgr {
     readonly CONFIG_NAME = "rpscript";
@@ -16,56 +15,73 @@ export class ModuleMgr {
         this.wordMgr = new KeywordsMgr;
     }
 
-    async installModule (npmModuleName:string) :Promise<void> {
+    async installModule (npmModuleName:string) :Promise<RpsModuleModel> {
 
         try{
             if(!npmModuleName.trim().startsWith('rpscript-api-')) 
                 npmModuleName = 'rpscript-api-' + npmModuleName.trim();
 
-            await npm.install([npmModuleName], {cwd:process.cwd(), save:false, global:false});
-
-            const mod = await import(`../../../${npmModuleName}`);
-            let modClazz = mod.default;
-            let modName = modClazz['rpsModuleName'];
-
-            let defaultConfig:RpsModuleModel = {name:modName,npmModuleName:npmModuleName,npmVersion:''};
+            let installedInfo = await this.installFromNpm(npmModuleName);
     
-            this.configStore.set(modName,defaultConfig);
+            //save module info
+            this.configStore.set(installedInfo['name'],{
+                name:installedInfo['name'],
+                npmModuleName:npmModuleName,
+                npmVersion:installedInfo['version']
+            });
 
-            this.wordMgr.saveModuleKeywords(modName,modClazz);
+            //save keywords info
+            this.wordMgr.saveModuleKeywords(installedInfo['name'] , installedInfo['clazz']);
+
+            let modInfo:RpsModuleModel = this.configStore.get(installedInfo['name']);
+            return modInfo;
 
         }catch(err){
             throw err;
         }
     }
+
+    private async installFromNpm (npmModuleName) : Promise<Object> {
+        NpmModHelper.installNpmModule(npmModuleName);
+
+        const mod = await import(`../../../${npmModuleName}`);
+        let modClazz = mod.default;
+        let modName = modClazz['rpsModuleName'];
+
+        return {clazz:modClazz,name:modName,version:''};
+    }
+
+
     async removeModule (npmModuleName:string) : Promise<void>{
         try{
             if(!npmModuleName.trim().startsWith('rpscript-api-')) 
                 npmModuleName = 'rpscript-api-' + npmModuleName.trim();
 
-            await npm.uninstall([npmModuleName], {cwd:process.cwd(), save:false, global:false});
+            NpmModHelper.removeNpmModule(npmModuleName);
 
-            let all = this.configStore.all;
+            let removedMod = this.removeModuleConfig(npmModuleName);
 
-            let output = R.values(all);
-            output = R.find( R.propEq('moduleName', npmModuleName)  , output );
-    
-            this.configStore.delete(output['name']);
-            this.wordMgr.removeModuleDefaults(output['name']);
+            this.wordMgr.removeModuleDefaults(removedMod['name']);
 
         }catch(err){
             throw err;
         }
     }
-    listModuleNames () : string[]{
-        return R.keys(this.configStore.all);
+    private removeModuleConfig (npmModuleName:string) : RpsModuleModel{
+        let all = this.configStore.all;
+
+        let output = R.values(all);
+        //npm name and module name assume to be different
+        let modConfig:RpsModuleModel = R.find( R.propEq('npmModuleName', npmModuleName)  , output );
+    
+        this.configStore.delete(modConfig['name']);
+        
+        return modConfig;
     }
-    listInstalledModules () : Object{
-        return this.configStore.all;
-    }
-    listAvailableModules () : Object{
-        return {};
-    }
+
+    listModuleNames () : string[]{ return R.keys(this.configStore.all); }
+    listInstalledModules () : Object{ return this.configStore.all; }
+    listAvailableModules () : Object{ return {}; }
 
     async loadModuleObjs (rpsContext:RpsContext) : Promise<Object>{
         let allModules:Object = this.configStore.all;

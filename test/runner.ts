@@ -5,7 +5,7 @@ import {Runner} from '../src/core/runner';
 
 
 describe('Runner', () => {
-  it.only('create a folder .rpscript', async () => {
+  xit('create a folder .rpscript', async () => {
     let runner = new Runner({});
   });
 });
