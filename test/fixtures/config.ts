@@ -23,7 +23,7 @@ let INIT_NOTIFIER_CONFIG = {
     "notifier": {
       "name": "notifier",
       "npmModuleName": "rpscript-api-notifier",
-      "npmVersion": "",
+      "npmVersion": "0.4.0",
       "enabled":true,
       "actions": {
         "notify": {

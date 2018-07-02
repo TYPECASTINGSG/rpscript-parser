@@ -63,13 +63,13 @@ export class ModuleMgr {
     }
 
     private async installFromNpm (npmModuleName) : Promise<Object> {
-        NpmModHelper.installNpmModule(npmModuleName);
+        let result = NpmModHelper.installNpmModule(npmModuleName);
 
-        const mod = await import(`../../../${npmModuleName}`);
+        const mod = await import(`${__dirname}/../../../${npmModuleName}`);
         let modClazz = mod.default;
         let moduleName = modClazz['rpsModuleName'];
 
-        return {clazz:modClazz,name:moduleName,version:''};
+        return {clazz:modClazz,name:moduleName,version:result.version,npm:result};
     }
 
 

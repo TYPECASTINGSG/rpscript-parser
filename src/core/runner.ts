@@ -35,6 +35,7 @@ export interface ExecResult {
 }
 
 export class Runner extends EventEmitter{
+    static readonly COMPILE_START_EVT = "runner.compile.start";
     static readonly TRANSPILE_EVT = "runner.transpile";
     static readonly TRANSPILE_ERR_EVT = "runner.transpile.err";
     static readonly LINT_EVT = "runner.linted";
@@ -59,6 +60,8 @@ export class Runner extends EventEmitter{
     }
 
     async execute (filepath:string) :Promise<ExecResult>{
+        this.emit(Runner.COMPILE_START_EVT);
+        
         let rpsContent = fs.readFileSync(filepath,'utf8');
         let transpileContent:TranspileContent;
 
