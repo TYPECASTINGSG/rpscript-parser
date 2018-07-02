@@ -39,8 +39,18 @@ export class Runner extends EventEmitter{
     static readonly TRANSPILE_ERR_EVT = "runner.transpile.err";
     static readonly LINT_EVT = "runner.linted";
     static readonly COMPILED_EVT = "runner.compiled";
+    
     static readonly MOD_LOADED_EVT = "runner.module.loaded";
+    static readonly MOD_INSTALLED_NPM_EVT = "runner.module.installed.npm";
+    static readonly MOD_INSTALLED_CONFIG_EVT = "runner.module.installed.config";
+    static readonly MOD_INSTALLED_ERROR_EVT = "runner.module.installed.error";
+
+    static readonly MOD_REMOVED_NPM_EVT = "runner.module.removed.npm";
+    static readonly MOD_REMOVED_CONFIG_EVT = "runner.module.removed.config";
+    static readonly MOD_REMOVED_ERROR_EVT = "runner.module.removed.error";
+
     static readonly MOD_DISABLED_EVT = "runner.module.disabled";
+    
     static readonly START_EVT = "runner.start";
     static readonly END_EVT = "runner.end";
 

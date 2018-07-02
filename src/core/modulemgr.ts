@@ -25,7 +25,10 @@ export class ModuleMgr {
                 npmModuleName = 'rpscript-api-' + npmModuleName.trim();
 
             let installedInfo = await this.installFromNpm(npmModuleName);
+
+            this.event.emit('runner.module.installed.npm', installedInfo);
     
+
             //save module info
             this.configStore.set(installedInfo['name'],{
                 name:installedInfo['name'],
@@ -38,9 +41,14 @@ export class ModuleMgr {
             this.wordMgr.saveModuleKeywords(installedInfo['name'] , installedInfo['clazz']);
 
             let modInfo:RpsModuleModel = this.configStore.get(installedInfo['name']);
+
+            this.event.emit('runner.module.installed.config', modInfo);
+
+            
             return modInfo;
 
         }catch(err){
+            this.event.emit('runner.module.installed.error',err);
             throw err;
         }
     }
@@ -61,13 +69,20 @@ export class ModuleMgr {
             if(!npmModuleName.trim().startsWith('rpscript-api-')) 
                 npmModuleName = 'rpscript-api-' + npmModuleName.trim();
 
-            NpmModHelper.removeNpmModule(npmModuleName);
+            let removeInfo = NpmModHelper.removeNpmModule(npmModuleName);
+
+            this.event.emit('runner.module.removed.npm',removeInfo);
+
 
             let removedMod = this.removeModuleConfig(npmModuleName);
 
             this.wordMgr.removeModuleDefaults(removedMod['name']);
 
+
+            this.event.emit('runner.module.removed.config',removedMod);
+
         }catch(err){
+            this.event.emit('runner.module.removed.error',err);
             throw err;
         }
     }
