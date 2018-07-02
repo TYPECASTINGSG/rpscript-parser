@@ -2,20 +2,12 @@ import 'mocha';
 import {expect} from 'chai';
 import {ModuleMgr} from '../src/core/modulemgr';
 
+import {INIT_NOTIFIER_CONFIG} from './fixtures/config';
 
-describe('Module Manager', () => {
+describe.skip('Module Manager', () => {
 
-  xit('should install plugin', async function() {
-    // let mgr = new ModuleMgr;
-    
-    // let mod = await mgr.installModule('error-module');
 
-    // console.log(mod);
-    // mgr.removeModule('rpscript-api-notifier');
-
-  }).timeout(0);
-
-  xit('install and remove notifier module',async function(){
+  it('install and remove notifier module',async function(){
     let mgr = new ModuleMgr;
 
     let info = await mgr.installModule('notifier');
@@ -32,52 +24,4 @@ describe('Module Manager', () => {
   }).timeout(0)
 
 })
-
-let INIT_NOTIFIER_CONFIG = {
-  "$DEFAULT": {
-    "notifier": [
-      {
-        "defaultEnabled": true,
-        "defaultPriority": 3,
-        "defaultName": "notifier",
-        "actionName": "notify",
-        "params": [
-          {
-            "name": "title",
-            "defaultPattern": "$^"
-          },
-          {
-            "name": "message",
-            "defaultPattern": "$^"
-          }
-        ],
-        "modName": "notifier"
-      }
-    ]
-  },
-  "notifier": {
-    "name": "notifier",
-    "npmModuleName": "rpscript-api-notifier",
-    "npmVersion": "",
-    "actions": {
-      "notify": {
-        "defaultEnabled": true,
-        "defaultPriority": 3,
-        "defaultName": "notifier",
-        "actionName": "notify",
-        "params": [
-          {
-            "name": "title",
-            "defaultPattern": "$^"
-          },
-          {
-            "name": "message",
-            "defaultPattern": "$^"
-          }
-        ],
-        "modName": "notifier"
-      }
-    }
-  }
-}
 

@@ -28,7 +28,7 @@
     "configstore": "^3.1.2",
     "eval": "^0.1.2",
     "ramda": "^0.25.0",
-    "rpscript-interface": "^0.4.2",
+    "rpscript-interface": "^0.5.2",
     "shelljs": "^0.8.2",
     "ts-deferred": "^1.0.4",
     "tslint": "^5.10.0"

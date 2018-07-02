@@ -14,40 +14,40 @@ export class KeywordsMgr {
         if(!deflt) this.configStore.set('$DEFAULT',{});
     }
 
-    saveModuleKeywords (modName:string, modClazz:Function) {
-        let mod:RpsModuleModel = this.configStore.get(modName);
-        let actionConfigs:RpsActionModel[] = this.extractClazzActions(modClazz,modName);
+    saveModuleKeywords (moduleName:string, modClazz:Function) {
+        let mod:RpsModuleModel = this.configStore.get(moduleName);
+        let actionConfigs:RpsActionModel[] = this.extractClazzActions(modClazz,moduleName);
         
         this.updateModule(mod,actionConfigs);
         
-        this.updateDefaults(modName, actionConfigs);
+        this.updateDefaults(moduleName, actionConfigs);
     }
 
     updateModule (mod:RpsModuleModel, actionConfigs:RpsActionModel[]) {
         mod.actions = {};
         for(let index in actionConfigs){
             let config = actionConfigs[index];
-            mod.actions[config.actionName ] = actionConfigs[index];
+            mod.actions[config.methodName ] = actionConfigs[index];
         }
 
         this.configStore.set(mod.name,mod);
     }
 
-    updateDefaults(modName:string, clazzActions:RpsActionModel[]){
+    updateDefaults(moduleName:string, clazzActions:RpsActionModel[]){
         let deflt:RpsDefaultModel = this.configStore.get('$DEFAULT');
 
-        let actionsWithDefault = R.filter( config => !!config.defaultName , clazzActions );
+        let actionsWithDefault = R.filter( config => !!config.verbName , clazzActions );
 
         actionsWithDefault.forEach( action => {
-            let defaultName = action.defaultName;
+            let verbName = action.verbName;
 
-            if(deflt[defaultName]) {
-                let newList = R.filter( a => a['modName'] !== action.modName, deflt[defaultName]);
+            if(deflt[verbName]) {
+                let newList = R.filter( a => a['moduleName'] !== action.moduleName, deflt[verbName]);
                 
                 newList.push(action);
-                deflt[defaultName] = newList;
+                deflt[verbName] = newList;
 
-            }else deflt[defaultName] = [action];
+            }else deflt[verbName] = [action];
             
         });
 
@@ -55,12 +55,12 @@ export class KeywordsMgr {
     }
 
     // iterate keywords
-    // filter away action list match modName
-    removeModuleDefaults (modName:string) {
+    // filter away action list match moduleName
+    removeModuleDefaults (moduleName:string) {
         let deflts:RpsDefaultModel = this.configStore.get('$DEFAULT');
 
         R.forEachObjIndexed((vals:RpsActionModel[],key:string) => {
-            let output:RpsActionModel[] = R.filter( action => action.modName !== modName , vals);
+            let output:RpsActionModel[] = R.filter( action => action.moduleName !== moduleName , vals);
             
             if(output.length == 0) delete deflts[key];
             else deflts[key] = output;
@@ -73,8 +73,13 @@ export class KeywordsMgr {
         return this.configStore.get('$DEFAULT');
     }
     
+    selectBestFitByPriority(settings:RpsActionModel[]) : RpsActionModel {
+        let sort = R.sortBy(R.prop('priority'));
 
-    private extractClazzActions (modClazz:Function,modName:string) : RpsActionModel[]{
+        return sort(settings)[settings.length-1];
+    }
+
+    private extractClazzActions (modClazz:Function,moduleName:string) : RpsActionModel[]{
         let actionConfigs:RpsActionModel[] = [];
         let methods = Object.getOwnPropertyNames(modClazz.prototype);
 
@@ -82,7 +87,7 @@ export class KeywordsMgr {
           let availConfig:RpsActionModel = modClazz.prototype[methods[i]]['rpsActionConfig'];
 
           if(availConfig) {
-            availConfig.modName = modName;
+            availConfig.moduleName = moduleName;
             actionConfigs.push(availConfig);
           }
         }
@@ -91,14 +96,14 @@ export class KeywordsMgr {
     }
 
     isValidKeyword (keyword:string) : boolean {
-        let modName = '',word = '';
+        let moduleName = '',word = '';
         if(keyword.split('.').length === 2){
-            modName = keyword.split('.')[0];
+            moduleName = keyword.split('.')[0];
             word = keyword.split('.')[1];
         }else word = keyword
 
-        if(modName) {
-            let mod = this.configStore.get(modName);
+        if(moduleName) {
+            let mod = this.configStore.get(moduleName);
             return !!mod.actions[word];
         }else {
             let deflt = this.configStore.get('$DEFAULT');

@@ -3,16 +3,19 @@ import R from 'ramda';
 import {RpsContext,RpsModuleModel,RpsActionModel} from 'rpscript-interface';
 import {KeywordsMgr} from './keywordsmgr';
 import {NpmModHelper} from '../helper/npmMod';
+import { EventEmitter } from 'events';
 
 export class ModuleMgr {
     readonly CONFIG_NAME = "rpscript";
     configStore:ConfigStore;
 
     wordMgr:KeywordsMgr;
+    event:EventEmitter;
 
     constructor() {
         this.configStore = new ConfigStore(this.CONFIG_NAME);
         this.wordMgr = new KeywordsMgr;
+        this.event = new EventEmitter;
     }
 
     async installModule (npmModuleName:string) :Promise<RpsModuleModel> {
@@ -27,7 +30,8 @@ export class ModuleMgr {
             this.configStore.set(installedInfo['name'],{
                 name:installedInfo['name'],
                 npmModuleName:npmModuleName,
-                npmVersion:installedInfo['version']
+                npmVersion:installedInfo['version'],
+                enabled:true
             });
 
             //save keywords info
@@ -46,9 +50,9 @@ export class ModuleMgr {
 
         const mod = await import(`../../../${npmModuleName}`);
         let modClazz = mod.default;
-        let modName = modClazz['rpsModuleName'];
+        let moduleName = modClazz['rpsModuleName'];
 
-        return {clazz:modClazz,name:modName,version:''};
+        return {clazz:modClazz,name:moduleName,version:''};
     }
 
 
@@ -89,12 +93,22 @@ export class ModuleMgr {
 
         let moduleObj:Object = {};
 
+        //TODO: import issue
+        //rem: runtime config at rpsContext
         //load all modules
         for(let i =0;i<moduleNames.length;i++){
-            let modName = allModules[ moduleNames[i] ].moduleName;
-            let mod = await import (`../../../${modName}`);
+            let module = allModules[ moduleNames[i] ];
+            let moduleName = module.moduleName;
 
-            moduleObj[ moduleNames[i] ] = new mod.default(rpsContext);
+            if(module.enabled) {
+                let mod = await import (`../../../${moduleName}`); //maybe. find node_module path
+
+                moduleObj[ moduleNames[i] ] = new mod.default(rpsContext);
+
+                this.event.emit('runner.module.loaded',moduleNames[i]);
+            }else {
+                this.event.emit('runner.module.disabled',moduleNames[i]);
+            }
         }
 
         moduleObj['api'] = this.genDefaultApi(moduleObj,rpsContext);
@@ -107,22 +121,19 @@ export class ModuleMgr {
 
         return (keyword:string, ctx:RpsContext, opt:Object,  ...params) => {
 
-            let defSettings:RpsActionModel[] = rpsContext.getRuntimeDefault()[keyword];
+            let actions:RpsActionModel[] = rpsContext.getRuntimeDefault()[keyword];
 
-            let bestFit:RpsActionModel = this.selectBestFitByPriority (defSettings, keyword, params);
+            let bestFit:RpsActionModel = this.wordMgr.selectBestFitByPriority (actions);
 
             let args = [ctx,opt].concat(params);
 
             //modObject.module.action(ctx,opt,...params)
-            return modObj[bestFit.modName][bestFit.actionName].apply(this,args);
+            return modObj[bestFit.moduleName][bestFit.methodName].apply(this,args);
             
         }
     }
 
-    private selectBestFitByPriority(settings:RpsActionModel[], keywords:string, params:any[]) : RpsActionModel {
-        let sort = R.sortBy(R.prop('defaultPriority'));
-        return sort(settings)[settings.length-1];
-    }
+
 
 }
 

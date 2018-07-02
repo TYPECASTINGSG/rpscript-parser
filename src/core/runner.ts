@@ -39,10 +39,14 @@ export class Runner extends EventEmitter{
     static readonly TRANSPILE_ERR_EVT = "runner.transpile.err";
     static readonly LINT_EVT = "runner.linted";
     static readonly COMPILED_EVT = "runner.compiled";
+    static readonly MOD_LOADED_EVT = "runner.module.loaded";
+    static readonly MOD_DISABLED_EVT = "runner.module.disabled";
     static readonly START_EVT = "runner.start";
     static readonly END_EVT = "runner.end";
 
     static readonly ACTION_EVT = "action";
+
+    static readonly CTX_PRIOR_SET_EVT = "context.priority.set";
 
     config:RpsMainConfig;
     runnerListener:EventEmitter;
@@ -67,7 +71,6 @@ export class Runner extends EventEmitter{
             transpileContent = await this.transpile(filepath,rpsContent);
 
         }catch(err){
-            // console.log('EXCEPTION ********'+err.constructor.name);
             this.emit(Runner.TRANSPILE_ERR_EVT,err);
             return {};
         }
@@ -120,11 +123,11 @@ export class Runner extends EventEmitter{
         let rpsContext = new RpsContext();
         let context = await modMgr.loadModuleObjs(rpsContext);
 
-        context['RpsContext'] = RpsContext;
         context['EventEmitter'] = EventEmitter;
     
         context['$CONTEXT'] = rpsContext;
-        context['$RESULT'] = null;
+
+        rpsContext.event.on(Runner.CTX_PRIOR_SET_EVT,(...params)=>this.emit(Runner.CTX_PRIOR_SET_EVT,params));
 
         return context;
     }
