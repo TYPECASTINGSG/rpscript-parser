@@ -60,7 +60,7 @@ export class Runner extends EventEmitter{
     }
 
     async execute (filepath:string) :Promise<ExecResult>{
-        this.emit(Runner.COMPILE_START_EVT);
+        this.emit(Runner.COMPILE_START_EVT,filepath);
         
         let rpsContent = fs.readFileSync(filepath,'utf8');
         let transpileContent:TranspileContent;

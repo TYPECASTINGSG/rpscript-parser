@@ -3,7 +3,7 @@ import shell from 'shelljs';
 export class NpmModHelper {
     
     static installNpmModule (moduleName:string) : any{
-        let child = shell.exec(`npm install --no-save ${moduleName}`,{silent:true});
+        let child = shell.exec(`npm install --save ${moduleName}`,{silent:true});
 
         if(child.stderr) throw new Error(''+child.stderr);
 
@@ -19,7 +19,7 @@ export class NpmModHelper {
     }
 
     static removeNpmModule (moduleName:string) : any{
-        let child = shell.exec(`npm remove --no-save ${moduleName}`,{silent:true});
+        let child = shell.exec(`npm remove --save ${moduleName}`,{silent:true});
         
         if(child.stderr) throw new Error(''+child.stderr);
 
