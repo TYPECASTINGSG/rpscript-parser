@@ -28,6 +28,7 @@ export interface RpsMainConfig{
     skipLinting?:boolean;
     skipOutputTS?:boolean;
     skipRun?:boolean;
+    modules?:string[];
 }
 export interface ExecResult {
     transpile?:TranspileContent,
@@ -125,7 +126,7 @@ export class Runner extends EventEmitter{
 
 
         let rpsContext = new RpsContext();
-        let context = await modMgr.loadModuleObjs(rpsContext);
+        let context = await modMgr.loadModuleObjs(rpsContext,this.config.modules);
 
         context['EventEmitter'] = EventEmitter;
     

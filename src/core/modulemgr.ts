@@ -111,7 +111,7 @@ export class ModuleMgr {
     listInstalledModules () : Object{ return this.configStore.all; }
     listAvailableModules () : Object{ return {}; }
 
-    async loadModuleObjs (rpsContext:RpsContext) : Promise<Object>{
+    async loadModuleObjs (rpsContext:RpsContext,modules?:string[]) : Promise<Object>{
         let allModules:Object = this.configStore.all;
         let moduleNames = R.filter( m => m!=='$DEFAULT', R.keys(allModules));
 
@@ -124,7 +124,9 @@ export class ModuleMgr {
             let module = allModules[ moduleNames[i] ];
             let moduleName = module.npmModuleName;
 
-            if(module.enabled) {
+            let skip:boolean = modules? !R.any(R.identical(moduleNames[i]),modules) : false;
+
+            if(module.enabled && !skip) {
                 let mod = await import (`../../../${moduleName}`); //maybe. find node_module path
 
                 moduleObj[ moduleNames[i] ] = new mod.default(rpsContext);
