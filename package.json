@@ -27,8 +27,9 @@
     "antlr4ts": "^0.4.1-alpha.0",
     "configstore": "^3.1.2",
     "eval": "^0.1.2",
+    "js-yaml": "^3.12.0",
     "ramda": "^0.25.0",
-    "rpscript-interface": "^0.5.2",
+    "rpscript-interface": "^0.5.4",
     "shelljs": "^0.8.2",
     "ts-deferred": "^1.0.4",
     "tslint": "^5.10.0"
@@ -37,6 +38,7 @@
     "@types/chai": "^4.1.3",
     "@types/configstore": "^2.1.1",
     "@types/jasmine": "^2.8.8",
+    "@types/js-yaml": "^3.11.2",
     "@types/mocha": "^5.2.0",
     "@types/node": "^10.3.5",
     "@types/ramda": "^0.25.33",

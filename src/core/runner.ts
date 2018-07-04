@@ -21,14 +21,16 @@ import {RpsContext} from 'rpscript-interface';
 import {TranspileContent} from '../antlr/RpsListener';
 
 import {ModuleMgr} from './modulemgr';
-
+import shell from 'shelljs';
+import yaml from 'js-yaml';
 
 export interface RpsMainConfig{
-    outputDir?:string;
-    skipLinting?:boolean;
+    outputDir?:string; // for logs/temp files => .rpscript
+    skipLinting?:boolean; //deprecated
     skipOutputTS?:boolean;
-    skipRun?:boolean;
-    modules?:string[];
+    skipRun?:boolean;  //for verify
+    modules?:string[];  //only run these modules
+    configFilesLocation?:string;
 }
 export interface ExecResult {
     transpile?:TranspileContent,
@@ -124,8 +126,7 @@ export class Runner extends EventEmitter{
         modMgr.event.on(Runner.MOD_LOADED_EVT,(...params)=>this.emit(Runner.MOD_LOADED_EVT,params));
         modMgr.event.on(Runner.MOD_DISABLED_EVT,(...params)=>this.emit(Runner.MOD_DISABLED_EVT,params));
 
-
-        let rpsContext = new RpsContext();
+        let rpsContext = this.initRpsContext(this.config.configFilesLocation);
         let context = await modMgr.loadModuleObjs(rpsContext,this.config.modules);
 
         context['EventEmitter'] = EventEmitter;
@@ -135,6 +136,26 @@ export class Runner extends EventEmitter{
         rpsContext.event.on(Runner.CTX_PRIOR_SET_EVT,(...params)=>this.emit(Runner.CTX_PRIOR_SET_EVT,params));
 
         return context;
+    }
+
+    //config convention: rps-<module-id>.yaml
+    initRpsContext(configLoc?:string) :RpsContext {
+        let ctx = new RpsContext();
+        
+        let configPath = configLoc ? configLoc : process.cwd();
+        let pathfiles = shell.ls(configPath);
+
+        pathfiles.forEach(file => {
+            
+            if(file.trim().startsWith('rps-')){
+                let moduleCtx = yaml.safeLoad(fs.readFileSync(configPath+'/'+file,'utf8'));
+                let moduleId = file.substring(file.lastIndexOf("rps-") + 4, file.lastIndexOf("."));
+
+                ctx.addModuleContext(moduleId,moduleCtx);
+            }
+        });
+
+        return ctx;
     }
 
     convertToTS(filepath:string, content:string) : Promise<TranspileContent> {

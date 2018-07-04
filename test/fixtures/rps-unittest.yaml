@@ -1,0 +1,18 @@
+
+# Enable if you want debug output
+# debug: 1
+config:
+    port: 9999
+    email: daisuke@endeworks.jp # This is used for your gravatar
+    services:
+        twitter:
+            class: Hamaki::Service::Twitter
+            username: CHANGEME
+            password: CHANGEME
+    # Sorry, don't need to see these, so please be filtered.
+    filter:
+        class: Hamaki::Filter::Regexp
+        default: 1
+        on_match: 0
+        regexp_map:
+text: '(?:@radioyoutube|(?:CLAP|STAND)!) '

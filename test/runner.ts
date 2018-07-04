@@ -5,8 +5,12 @@ import {Runner} from '../src/core/runner';
 
 
 describe('Runner', () => {
-  xit('create a folder .rpscript', async () => {
+  it('should get config and add to context', async () => {
     let runner = new Runner({});
+    let ctx = runner.initRpsContext(`${process.cwd()}/test/fixtures`);
+
+    c.expect(ctx.getModuleContext('unittest')).to.be.deep.equals({"config":{"port":9999,"email":"daisuke@endeworks.jp","services":{"twitter":{"class":"Hamaki::Service::Twitter","username":"CHANGEME","password":"CHANGEME"}},"filter":{"class":"Hamaki::Filter::Regexp","default":1,"on_match":0,"regexp_map":null}},"text":"(?:@radioyoutube|(?:CLAP|STAND)!) "});
+    
   });
 });
 //   xit('should run', () => {
