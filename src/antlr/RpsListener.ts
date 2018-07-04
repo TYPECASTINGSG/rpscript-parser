@@ -369,7 +369,9 @@ setTimeout(main, 100);
   private parseOpt (opts:OptContext[]):string{
     let obj = {};
     R.forEach(x => {
-        obj[x.optName().text] = x.literal().text
+        let text = x.literal().StringLiteral() ? x.literal().StringLiteral().text.replace(/["']/g,'') : x.literal().text;
+        
+        obj[x.optName().text] = text;
     } , opts);
 
     return JSON.stringify(obj);
