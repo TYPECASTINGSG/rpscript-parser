@@ -188,7 +188,11 @@ setTimeout(main, 100);
     this.content.fnContent += '\n}';
   }
   public enterExeFn(ctx:ExeFnContext) : void {
-    let vars = R.map(v=>v.text, ctx.param());
+    let vars = R.map(v=>{
+      if(v.variable()) return this.parseVar(v.variable());
+      else return v.text;
+    }, ctx.param());
+
     let content = `\n\tawait ${ctx.WORD().text}(${vars});\n`;
     
     if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);
@@ -243,6 +247,7 @@ setTimeout(main, 100);
       if(this.hasPipeParent(ctx)) {} //skip
       else if(this.hasFnParent(ctx)) this.content.fnContent += content;
       else  this.content.mainContent += content;
+
     }
   }
   // literal | variable | anonFn | symbol | action;
@@ -252,9 +257,7 @@ setTimeout(main, 100);
   public exitLiteral(ctx:LiteralContext) : void {
   }
   public enterVariable(ctx:VariableContext) : void {
-    let variable = ctx.text;
-    if(ctx.text.trim().startsWith('$RESULT')) variable = '$CONTEXT.'+variable;
-    else variable = '$CONTEXT.variables.'+variable;
+    let variable = this.parseVar(ctx);
 
     this.parseTreeProperty.set(ctx,`${variable}`);
   }
@@ -377,6 +380,13 @@ setTimeout(main, 100);
     return JSON.stringify(obj);
   }
 
+  private parseVar (ctx:VariableContext) :string {
+    let variable = ctx.text;
+    if(ctx.text.trim().startsWith('$RESULT')) variable = '$CONTEXT.'+variable;
+    else if(!this.hasFnParent(ctx))variable = '$CONTEXT.variables.'+variable;
+
+    return variable;
+  }
 
 
   private appendToScope (content:string) : void{
