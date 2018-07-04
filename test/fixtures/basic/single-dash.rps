@@ -1,0 +1,1 @@
+echo-dash "hello world" --opt="hi"

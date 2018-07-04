@@ -1,0 +1,3 @@
+echo-dash "hello world"
+echo $RESULT.ok()
+echo $RESULT

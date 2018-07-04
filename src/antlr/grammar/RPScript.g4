@@ -108,7 +108,7 @@ ELSE                    : 'else';
 IN                      : 'in';
 INCLUDE                 : 'include';
 
-VARIABLE                : [$] WORD ' '*;
+VARIABLE                : [$][a-zA-Z0-9.()]+' '*;
 PIPE                    : '|';
 
 // COMMENT : ';' ~[\r\n]*;
@@ -130,7 +130,7 @@ TemplateStringLiteral:          '`' ('\\`' | ~'`')* '`';
 
 // KEYWORD  : [a-z][a-zA-Z0-9.]*;
 SYMBOL  : [A-Z][a-zA-Z0-9.]*;
-WORD  : [a-zA-Z0-9.]+;
+WORD  : [a-z][a-zA-Z0-9-]+;
 
 fragment DoubleStringCharacter       : ~["\\\r\n] | LineContinuation ;
 fragment SingleStringCharacter       : ~['\\\r\n] | LineContinuation ;
