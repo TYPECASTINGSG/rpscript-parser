@@ -254,6 +254,7 @@ setTimeout(main, 100);
   public enterVariable(ctx:VariableContext) : void {
     let variable = ctx.text;
     if(ctx.text.trim().startsWith('$RESULT')) variable = '$CONTEXT.'+variable;
+    else variable = '$CONTEXT.variables.'+variable;
 
     this.parseTreeProperty.set(ctx,`${variable}`);
   }
