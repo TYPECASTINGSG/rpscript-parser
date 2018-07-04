@@ -116,7 +116,7 @@ setTimeout(main, 100);
     let firstActionContext = this.parseTreeProperty.get(ctx.action()[0]);
     let secActionContext = this.parseTreeProperty.get(ctx.action()[1]);
 
-    let content = '\t'+secActionContext.replace(')', ' '+firstActionContext) + ');\n';
+    let content = '\t'+secActionContext.replace(')', ', '+firstActionContext) + ');\n';
     
     if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);
     else this.appendToScope(content);
@@ -236,10 +236,13 @@ setTimeout(main, 100);
 
     let joinList = pList.join(' , ');
 
-    if(keyword.split('.').length>1){
-      this.parseTreeProperty.set(ctx,`${keyword.trim()}( $CONTEXT , ${opt} , ${joinList})`);
-    }else
+    // if(keyword.split('.').length>1){
+    //   this.parseTreeProperty.set(ctx,`${keyword.trim()}( $CONTEXT , ${opt} , ${joinList})`);
+    // }else
+    if(joinList)
       this.parseTreeProperty.set(ctx,`await api("${keyword.trim()}" , $CONTEXT , ${opt} , ${joinList})`);
+    else
+      this.parseTreeProperty.set(ctx,`await api("${keyword.trim()}" , $CONTEXT , ${opt} )`);
 
     if(!this.hasActionParent(ctx)){
       let content = "\t"+this.parseTreeProperty.get(ctx)+";\n";
