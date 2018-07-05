@@ -326,7 +326,7 @@ setTimeout(main, 100);
     return this.hasParent(ctx,'ActionContext');
   }
   private hasFnParent(ctx:ParserRuleContext) : boolean{
-    return this.hasParent(ctx,'NamedFnContext');
+    return this.hasParent(ctx,'NamedFnContext') || this.hasParent(ctx,'AnonFnContext');
   }
   private hasPipeParent(ctx:ParserRuleContext) : boolean{
     return this.hasParent(ctx,'PipeActionsContext');
