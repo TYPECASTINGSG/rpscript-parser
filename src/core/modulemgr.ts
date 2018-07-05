@@ -38,6 +38,7 @@ export class ModuleMgr {
             if(!npmModuleName.trim().startsWith('rpscript-api-')) 
                 npmModuleName = 'rpscript-api-' + npmModuleName.trim();
 
+            let moduleName = npmModuleName.indexOf('@') > 0 ? npmModuleName.substring(0,npmModuleName.indexOf('@')) : npmModuleName;
             let installedInfo = await this.installFromNpm(npmModuleName);
 
             this.event.emit(ModuleMgr.MOD_INSTALLED_NPM_EVT, installedInfo);
@@ -46,7 +47,7 @@ export class ModuleMgr {
             //save module info
             this.configStore.set(installedInfo['name'],{
                 name:installedInfo['name'],
-                npmModuleName:npmModuleName,
+                npmModuleName:moduleName,
                 npmVersion:installedInfo['version'],
                 enabled:true
             });
@@ -70,7 +71,7 @@ export class ModuleMgr {
     private async installFromNpm (npmModuleName) : Promise<Object> {
         let result = NpmModHelper.installNpmModule(npmModuleName);
 
-        const mod = await import(`${__dirname}/../../../${npmModuleName}`);
+        const mod = await import(`${__dirname}/../../../${result.moduleName}`);
         let modClazz = mod.default;
         let moduleName = modClazz['rpsModuleName'];
 
