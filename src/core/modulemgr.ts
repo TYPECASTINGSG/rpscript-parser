@@ -16,6 +16,11 @@ export class ModuleMgr {
     static readonly MOD_REMOVED_CONFIG_EVT = "runner.module.removed.config";
     static readonly MOD_REMOVED_ERROR_EVT = "runner.module.removed.error";
 
+    static readonly MOD_LOADED_EVT = "runner.module.loaded";
+    static readonly MOD_DISABLED_EVT = "runner.module.disabled";
+    static readonly MOD_LOAD_ERROR_EVT = "runner.module.load.error";
+    // static readonly ACTION_LOAD_ERROR_EVT = "action.module.load.error";
+
     configStore:ConfigStore;
 
     wordMgr:KeywordsMgr;
@@ -131,9 +136,9 @@ export class ModuleMgr {
 
                 moduleObj[ moduleNames[i] ] = new mod.default(rpsContext);
 
-                this.event.emit('runner.module.loaded',moduleNames[i]);
+                this.event.emit(ModuleMgr.MOD_LOADED_EVT,moduleNames[i]);
             }else {
-                this.event.emit('runner.module.disabled',moduleNames[i]);
+                this.event.emit(ModuleMgr.MOD_DISABLED_EVT,moduleNames[i]);
             }
         }
 
