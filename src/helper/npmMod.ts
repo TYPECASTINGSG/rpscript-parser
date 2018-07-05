@@ -5,7 +5,7 @@ export class NpmModHelper {
     static installNpmModule (moduleName:string) : any{
         let child = shell.exec(`npm install --save ${moduleName}`,{silent:true});
 
-        if(child.stderr) throw new Error(''+child.stderr);
+        if(!child.stdout && child.stderr) throw new Error(''+child.stderr);
 
         let result = ''+child.stdout;
         let version = result.substring(result.lastIndexOf('@')+1,result.indexOf('\n')).trim();
@@ -21,7 +21,7 @@ export class NpmModHelper {
     static removeNpmModule (moduleName:string) : any{
         let child = shell.exec(`npm remove --save ${moduleName}`,{silent:true});
         
-        if(child.stderr) throw new Error(''+child.stderr);
+        if(!child.stdout && child.stderr) throw new Error(''+child.stderr);
 
         return child.stdout;
     }
