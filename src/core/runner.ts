@@ -110,6 +110,9 @@ export class Runner extends EventEmitter{
     }
     private async run (tsContent:string) {
         let context = await this.initializeContext();
+        
+        this.setupModulesContext(context['$CONTEXT']);
+
         this.runnerListener = await _eval(tsContent,context,true);
 
         this.runnerListener.on(Runner.START_EVT, (...params) => this.emit(Runner.START_EVT,params) );
@@ -119,6 +122,12 @@ export class Runner extends EventEmitter{
         return this.runnerListener;
     }
 
+    setupModulesContext (ctx:RpsContext) {
+        let allCtx = ctx.getAllContexts();
+        allCtx.forEach(ctx => {
+            if(ctx['setup'])ctx['setup'](ctx);
+        });
+    }
 
     async initializeContext() {
         let modMgr = new ModuleMgr
