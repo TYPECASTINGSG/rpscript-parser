@@ -156,8 +156,10 @@ export class ModuleMgr {
 
             let args = [ctx,opt].concat(params);
 
-            //modObject.module.action(ctx,opt,...params)
-            return modObj[bestFit.moduleName][bestFit.methodName].apply(this,args);
+            let moduleUse = bestFit.moduleName;
+            if(opt['module']) moduleUse = opt['module'];
+
+            return modObj[moduleUse][bestFit.methodName].apply(this,args);
             
         }
     }
