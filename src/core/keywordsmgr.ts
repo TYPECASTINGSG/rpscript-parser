@@ -110,4 +110,15 @@ export class KeywordsMgr {
             return !!deflt[word];
         }
     }
+
+    getKeywordsModules (keywords:string[]) : Array<string> {
+        let modules = new Array<string>();
+        let keywordList = this.getDefaultActions();
+
+        let output = R.map(k => {
+            return keywordList[k][0].moduleName;
+        }, R.uniq(keywords));
+
+        return R.uniq(output);
+    }
 }

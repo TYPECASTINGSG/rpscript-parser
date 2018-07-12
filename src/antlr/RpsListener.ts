@@ -19,6 +19,7 @@ export interface TranspileContent {
   mainContent?:string;
   fnContent?:string;
   fullContent?:string;
+  verbs?:string[];
 }
 export interface IncludeContent {
   dir:string;
@@ -72,7 +73,7 @@ setTimeout(main, 100);
     this.scope = "root";
     this.parser=parser;
     this.content = {
-      mainContent:"", fullContent:"",fnContent:""
+      mainContent:"", fullContent:"",fnContent:"",verbs:[]
     }
     this.includeContent = [];
     this.keywordMgr = new KeywordsMgr;
@@ -225,6 +226,8 @@ setTimeout(main, 100);
     if(!this.keywordMgr.isValidKeyword(ctx.WORD().text))
       throw new InvalidKeywordException(ctx);
 
+    this.content.verbs.push(ctx.WORD().text.trim());
+    
     this.parseTreeProperty.set(ctx,`\t${ctx.WORD().text}`);
   }
   public exitAction(ctx:ActionContext) : void {

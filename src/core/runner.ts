@@ -23,6 +23,7 @@ import {TranspileContent} from '../antlr/RpsListener';
 import {ModuleMgr} from './modulemgr';
 import shell from 'shelljs';
 import yaml from 'js-yaml';
+import { KeywordsMgr } from '..';
 
 export interface RpsMainConfig{
     outputDir?:string; // for logs/temp files => .rpscript
@@ -56,10 +57,12 @@ export class Runner extends EventEmitter{
 
     config:RpsMainConfig;
     runnerListener:EventEmitter;
+    wordMgr : KeywordsMgr;
 
     constructor(config:RpsMainConfig){
         super();
-        this.config = config;   
+        this.config = config;
+        this.wordMgr = new KeywordsMgr;
     }
 
     async execute (filepath:string) :Promise<ExecResult>{
@@ -77,12 +80,13 @@ export class Runner extends EventEmitter{
             return {};
         }
         let tsContent = transpileContent.fullContent;
+        let verbs = transpileContent.verbs;
 
         let lintResult = await this.lint(tsContent);
  
         this.emit(Runner.COMPILED_EVT , { transpile:tsContent, lint:lintResult });
         
-        if(!this.config.skipRun) this.run(tsContent);
+        if(!this.config.skipRun) this.run(tsContent,verbs);
         
 
         return { transpile:transpileContent, lint:lintResult };
@@ -108,8 +112,8 @@ export class Runner extends EventEmitter{
         // }
         return lintResult;
     }
-    private async run (tsContent:string) {
-        let context = await this.initializeContext(); //loading modules
+    private async run (tsContent:string, verbs:string[]) {
+        let context = await this.initializeContext(verbs); //loading modules
         
         this.setupModulesContext(context['$CONTEXT']); //calling modules' setup lifecycle
 
@@ -129,14 +133,16 @@ export class Runner extends EventEmitter{
         });
     }
 
-    async initializeContext() {
+    async initializeContext(verbs:string[]) {
         let modMgr = new ModuleMgr
         
         modMgr.event.on(Runner.MOD_LOADED_EVT,(...params)=>this.emit(Runner.MOD_LOADED_EVT,params));
         modMgr.event.on(Runner.MOD_DISABLED_EVT,(...params)=>this.emit(Runner.MOD_DISABLED_EVT,params));
 
         let rpsContext = this.initRpsContext(this.config.configFilesLocation);
-        let context = await modMgr.loadModuleObjs(rpsContext,this.config.modules);
+
+        let modulesToBeLoaded = this.determineModulesToLoad(verbs);
+        let context = await modMgr.loadModuleObjs(rpsContext,modulesToBeLoaded);
 
         context['EventEmitter'] = EventEmitter;
     
@@ -145,6 +151,14 @@ export class Runner extends EventEmitter{
         rpsContext.event.on(Runner.CTX_PRIOR_SET_EVT,(...params)=>this.emit(Runner.CTX_PRIOR_SET_EVT,params));
 
         return context;
+    }
+
+    determineModulesToLoad (verbs?:string[]) {
+        let modules = this.config.modules;
+        if(!modules) {
+            modules = this.wordMgr.getKeywordsModules(verbs);
+        }
+        return modules;
     }
 
     //config convention: rps-<module-id>.yaml
