@@ -181,7 +181,8 @@ setTimeout(main, 100);
   }
 
   public enterNamedFn(ctx:NamedFnContext) : void {
-    let vars = R.map(v=>v.text, ctx.VARIABLE());
+    let vars = R.map(v=>v.text, ctx.variable());
+    
     this.content.fnContent += `\nasync function ${ctx.WORD().text} (${vars}){\n`;
   }
   public exitNamedFn(ctx:NamedFnContext) : void {
@@ -272,7 +273,7 @@ setTimeout(main, 100);
   public exitSymbol(ctx:SymbolContext) : void {
   }
   public enterAnonFn(ctx:AnonFnContext) : void{
-    let vars = R.map(v=>v.text, ctx.VARIABLE());
+    let vars = R.map(v=>v.text, ctx.variable());
 
     this.parseTreeProperty.set(ctx,`async function (${vars}){\n`);
   }

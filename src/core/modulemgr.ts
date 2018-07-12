@@ -123,9 +123,6 @@ export class ModuleMgr {
 
         let moduleObj:Object = {};
 
-        //TODO: import issue
-        //rem: runtime config at rpsContext
-        //load all modules
         for(let i =0;i<moduleNames.length;i++){
             let module = allModules[ moduleNames[i] ];
             let moduleName = module.npmModuleName;

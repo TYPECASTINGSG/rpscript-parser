@@ -34,7 +34,7 @@ elseStatement : DIRECTIVE ELSE '{' statementList '}';
 // tryStatement : TODO
 
 
-namedFn : DIRECTIVE WORD VARIABLE* block;
+namedFn : DIRECTIVE WORD variable* block;
 
 exeFn   : DIRECTIVE WORD param*;
 
@@ -50,7 +50,7 @@ opt   : '--' optName ('='literal)?;
 
 block : '{' statementList '}';
 
-anonFn : DIRECTIVE VARIABLE* block;
+anonFn : DIRECTIVE variable* block;
 
 singleExpression :             
     // singleExpression '.' identifierName                                                                  
@@ -68,10 +68,11 @@ singleExpression :
     | variable                                                         
     | objectLiteral;
 
-// ARGUMENT                : '"' ('""'|~'"')* '"' | NUMBER;
-// keyword : KEYWORD;
-// argument : ARGUMENT;
-variable : VARIABLE;
+
+// variable : VAR funct*;
+variable : VAR varParams? ( varFunction varParams? ) *;
+varFunction : FUNCTION;
+varParams    : '(' singleExpression* ')';
 literal
     : NullLiteral | BooleanLiteral
     | StringLiteral | TemplateStringLiteral
@@ -108,8 +109,11 @@ ELSE                    : 'else';
 IN                      : 'in';
 INCLUDE                 : 'include';
 
-VARIABLE                : [$][a-zA-Z0-9.()]+' '*;
 PIPE                    : '|';
+
+
+VAR                     : [$][a-zA-Z0-9]+ ' '*;
+FUNCTION                : [.][a-zA-Z0-9]+ ' '*;
 
 // COMMENT : ';' ~[\r\n]*;
 COMMENT : ';' ~[\r\n]* -> channel(HIDDEN);
@@ -128,7 +132,6 @@ StringLiteral:                 ('"' DoubleStringCharacter* '"'
 
 TemplateStringLiteral:          '`' ('\\`' | ~'`')* '`';
 
-// KEYWORD  : [a-z][a-zA-Z0-9.]*;
 SYMBOL  : [A-Z][a-zA-Z0-9.]*;
 WORD  : [a-z][a-zA-Z0-9-]+;
 

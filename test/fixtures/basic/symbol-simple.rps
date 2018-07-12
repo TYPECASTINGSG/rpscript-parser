@@ -1,0 +1,3 @@
+echo To Be Equal "var"
+echo To Be Equal $var
+echo To Be Equal 1

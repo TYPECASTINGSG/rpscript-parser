@@ -109,9 +109,9 @@ export class Runner extends EventEmitter{
         return lintResult;
     }
     private async run (tsContent:string) {
-        let context = await this.initializeContext();
+        let context = await this.initializeContext(); //loading modules
         
-        this.setupModulesContext(context['$CONTEXT']);
+        this.setupModulesContext(context['$CONTEXT']); //calling modules' setup lifecycle
 
         this.runnerListener = await _eval(tsContent,context,true);
 

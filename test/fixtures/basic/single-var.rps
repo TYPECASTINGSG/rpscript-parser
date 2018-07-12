@@ -1,3 +1,23 @@
+echo 123
 echo-dash "hello world"
-echo $RESULT.ok()
-echo $RESULT
+echo-var $var1
+echo-array [$a ,'b', "c", `d`, 1 ]
+echo-obj {'a':$a , 'b':'b' , "c":"c" , "d":`d` , 'e':1 }
+;echo-array [$a ,'b', "c", `d`, 1 ,@{echo-fn "1"}]
+;echo-obj {a:$a b:'b' c:"c" d:`d` e:1 f:@{echo-fn "1"}}
+
+echo1  $RESULT
+echo2  $RESULT.ok
+echo3  $RESULT.ok.still
+echo4  $RESULT.html('a')
+echo5  $RESULT.html($a)
+echo6  $RESULT.html('a') $a
+echo7  $RESULT.html(['a', $b , $c])
+echo7 $RESULT.html( [$a ,'b', "c", `d`, 1] )
+echo8  $RESULT.html({'a':'a' , 'b':'2' , 'c':1})
+
+echo9  $RESULT.text().html().abc
+echo10 $RESULT.text.html('abc')
+
+echo11  $RESULT('a')
+echo11  $RESULT('a').text
