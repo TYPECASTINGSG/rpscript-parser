@@ -187,6 +187,7 @@ setTimeout(main, 100);
     this.content.fnContent += `\nasync function ${ctx.WORD().text} (${vars}){\n`;
   }
   public exitNamedFn(ctx:NamedFnContext) : void {
+    if(!this.lastContentWithSemiCon(this.content.fnContent)) this.content.fnContent += ';';
     this.content.fnContent += '\treturn $CONTEXT.$RESULT;\n';
     this.content.fnContent += '\n}';
   }
@@ -291,6 +292,8 @@ setTimeout(main, 100);
 
     
     let content = anon + sList.join('\n');
+    
+    if(!this.lastContentWithSemiCon(this.content.fnContent)) content += ';';
     content += '\treturn $CONTEXT.$RESULT;\n';
     content += '\n}';
     
@@ -403,5 +406,13 @@ setTimeout(main, 100);
   private appendToScope (content:string) : void{
     if(this.scope === 'root') this.content.mainContent += content;
     else this.content.fnContent += content;
+  }
+
+  private lastContentWithSemiCon (content:string) : boolean {
+    let temp = content.trim();
+    let lastchar = temp[ temp.length - 1 ];
+
+    if(lastchar===';')return true;
+    else return false;
   }
 }
