@@ -107,7 +107,7 @@ setTimeout(main, 100);
     else this.scope = "root";
   }
   public exitBlock(ctx:BlockContext) : void {
-    if(this.hasFnParent(ctx)) this.scope = "function";
+    if(this.hasFnParent(ctx.parent)) this.scope = "function";
     else this.scope = "root";
   }
 
@@ -186,6 +186,7 @@ setTimeout(main, 100);
     this.content.fnContent += `\nasync function ${ctx.WORD().text} (${vars}){\n`;
   }
   public exitNamedFn(ctx:NamedFnContext) : void {
+    this.content.fnContent += '\treturn $CONTEXT.$RESULT;\n';
     this.content.fnContent += '\n}';
   }
   public enterExeFn(ctx:ExeFnContext) : void {
@@ -286,7 +287,9 @@ setTimeout(main, 100);
     }, ctx.block().statementList().statement());
 
     
-    let content = anon + sList.join('\n') + '\n}';
+    let content = anon + sList.join('\n');
+    content += '\treturn $CONTEXT.$RESULT;\n';
+    content += '\n}';
     
     this.parseTreeProperty.set(ctx,content);
   }
@@ -343,6 +346,7 @@ setTimeout(main, 100);
       }
       ctxTemp = ctxTemp.parent;
     }
+
     return isFnParent;
   }
 
