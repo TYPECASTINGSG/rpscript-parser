@@ -115,9 +115,11 @@ export class KeywordsMgr {
         let modules = new Array<string>();
         let keywordList = this.getDefaultActions();
 
-        let output = R.map(k => {
-            return keywordList[k][0].moduleName;
+        let output:any = R.map(k => {
+            return R.pluck( 'moduleName', keywordList[k]);
         }, R.uniq(keywords));
+
+        output = R.uniq(R.flatten(output));
 
         return R.uniq(output);
     }
