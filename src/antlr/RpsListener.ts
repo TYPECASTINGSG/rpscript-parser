@@ -125,8 +125,8 @@ setTimeout(main, 100);
 
   public exitIfelseStatement(ctx:IfelseStatementContext) : void {
     let ifText = this.parseTreeProperty.get(ctx.ifStatement());
-    let elseText = this.parseTreeProperty.get(ctx.elseStatement());
     let elIfText:string[] = R.map(elIf => this.parseTreeProperty.get(elIf) , ctx.elifStatement());
+    let elseText = ctx.elseStatement() ? this.parseTreeProperty.get(ctx.elseStatement()) : '';
 
     let fullText = ifText + elIfText.join('\n') + elseText;
 
