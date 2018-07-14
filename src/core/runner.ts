@@ -13,7 +13,6 @@ import {ErrorCollectorListener} from '../antlr/RpsErrorHandling';
 
 import {Deferred} from "ts-deferred";
 
-import { Linter, Configuration, LintResult } from "tslint";
 import { EventEmitter } from 'events';
 
 var _eval = require('eval');
@@ -34,8 +33,7 @@ export interface RpsMainConfig{
     configFilesLocation?:string;
 }
 export interface ExecResult {
-    transpile?:TranspileContent,
-    lint?:LintResult
+    transpile?:TranspileContent
 }
 
 export class Runner extends EventEmitter{
@@ -82,14 +80,13 @@ export class Runner extends EventEmitter{
         let tsContent = transpileContent.fullContent;
         let verbs = transpileContent.verbs;
 
-        let lintResult = await this.lint(tsContent);
  
-        this.emit(Runner.COMPILED_EVT , { transpile:tsContent, lint:lintResult });
+        this.emit(Runner.COMPILED_EVT , { transpile:tsContent });
         
         if(!this.config.skipRun) this.run(tsContent,verbs);
         
 
-        return { transpile:transpileContent, lint:lintResult };
+        return { transpile:transpileContent };
     }
 
     private async transpile(filepath:string, filecontent:string):Promise<TranspileContent>{
@@ -100,18 +97,7 @@ export class Runner extends EventEmitter{
 
         return result;
     }
-    private async lint (tsContent:string) :Promise<LintResult>{
-        let lintResult:LintResult = null;
-        // if(!this.config.skipLinting) {
-        // if(false) {
-        //     lintResult = this.linting(tsContent);
 
-        //     this.emit(Runner.LINT_EVT, lintResult);
-
-        //     if(lintResult.errorCount>0) throw Error('linting error');
-        // }
-        return lintResult;
-    }
     private async run (tsContent:string, verbs:string[]) {
         let context = await this.initializeContext(verbs); //loading modules
         
@@ -214,22 +200,6 @@ export class Runner extends EventEmitter{
         return parser;
     }
 
-    
-    linting (tsContent:string) : LintResult {
-        // const configurationFilename = __dirname+"/../../tslint.json";
-        const configurationFilename = __dirname+"/../../tsconfig.tslint.json";
-        const options = {
-            fix:false,
-            formatter: "json"
-        };
-        
-        const linter = new Linter(options);
-        const configLoad = Configuration.findConfiguration(configurationFilename, "");
-        
-        linter.lint("", tsContent, configLoad.results);
-        
-        return linter.getResult();
-    }
 
 }
 
