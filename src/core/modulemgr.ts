@@ -5,6 +5,8 @@ import {KeywordsMgr} from './keywordsmgr';
 import {NpmModHelper} from '../helper/npmMod';
 import { EventEmitter } from 'events';
 
+const HOMEDIR = require('os').homedir();
+
 export class ModuleMgr {
     readonly CONFIG_NAME = "rpscript";
 
@@ -130,7 +132,7 @@ export class ModuleMgr {
             let skip:boolean = modules? !R.any(R.identical(moduleNames[i]),modules) : false;
 
             if(module.enabled && !skip) {
-                let mod = await import (`../../../${moduleName}`); //maybe. find node_module path
+                let mod = await import (`${HOMEDIR}/.rpscript/modules/node_modules/${moduleName}`);
 
                 moduleObj[ moduleNames[i] ] = new mod.default(rpsContext);
 
@@ -167,23 +169,3 @@ export class ModuleMgr {
 
 
 }
-
-    // private selectBestFitByParamPattern(settings:RpsActionModel[], keywords:string, params:any[]) : RpsActionModel{
-
-    //     let assignPriority = R.map( setting => {
-    //         let mVals = R.addIndex(R.mapObjIndexed)((reg, key, obj,index) => {
-    //             //@ts-ignore
-    //             let pValue = params[index];
-    //             //@ts-ignore
-    //             return new RegExp(reg).test(pValue);
-    //         }, setting.defaultParamPatterns);
-            
-    //         setting.count = R.filter(v=> !v, R.values(mVals)).length;
-
-    //         return setting;
-    //     } ,settings );
-
-    //     assignPriority = R.sortBy(R.prop('count')) (assignPriority);
-
-    //     return assignPriority[ assignPriority.length-1 ];
-    // }

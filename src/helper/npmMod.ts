@@ -1,9 +1,10 @@
 import shell from 'shelljs';
+const HOMEDIR = require('os').homedir();
 
 export class NpmModHelper {
     
     static installNpmModule (moduleName:string) : any{
-        let child = shell.exec(`npm install --save ${moduleName}`,{silent:true});
+        let child = shell.exec(`npm install --save --prefix ${HOMEDIR}/.rpscript/modules ${moduleName}`,{silent:true});
 
         if(!child.stdout && child.stderr) throw new Error(''+child.stderr);
 
@@ -19,7 +20,7 @@ export class NpmModHelper {
     }
 
     static removeNpmModule (moduleName:string) : any{
-        let child = shell.exec(`npm remove --save ${moduleName}`,{silent:true});
+        let child = shell.exec(`npm remove --save --prefix ${HOMEDIR}/.rpscript/modules ${moduleName}`,{silent:true});
         
         if(!child.stdout && child.stderr) throw new Error(''+child.stderr);
 
