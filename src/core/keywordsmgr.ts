@@ -1,6 +1,6 @@
 import ConfigStore from 'configstore';
 import{RpsActionModel, RpsModuleModel,RpsDefaultModel} from 'rpscript-interface';
-import R from 'ramda';
+import * as R from '../../lib/ramda.min';
 
 
 export class KeywordsMgr {

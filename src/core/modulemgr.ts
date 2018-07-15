@@ -1,5 +1,5 @@
 import ConfigStore from 'configstore';
-import R from 'ramda';
+import * as R from '../../lib/ramda.min';
 import {RpsContext,RpsModuleModel,RpsActionModel} from 'rpscript-interface';
 import {KeywordsMgr} from './keywordsmgr';
 import {NpmModHelper} from '../helper/npmMod';

@@ -1,11 +1,9 @@
 import fs from 'fs';
-import R from 'ramda';
 import { ANTLRInputStream, CommonTokenStream } from 'antlr4ts';
 import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 
 import {RPScriptParser} from '../antlr/grammar/RPScriptParser';
 import {RPScriptLexer} from '../antlr/grammar/RPScriptLexer';
-import {RpsTranspileLexer} from '../antlr/RpsTranspileLexer';
 import {RPScriptListener} from '../antlr/grammar/RPScriptListener';
 
 import {RpsTranspileListener} from '../antlr/RpsListener';
@@ -15,13 +13,13 @@ import {Deferred} from "ts-deferred";
 
 import { EventEmitter } from 'events';
 
-var _eval = require('eval');
+var _eval = require('../../lib/eval');
 import {RpsContext} from 'rpscript-interface';
 import {TranspileContent} from '../antlr/RpsListener';
 
 import {ModuleMgr} from './modulemgr';
 import shell from 'shelljs';
-import yaml from 'js-yaml';
+import yaml from '../../lib/js-yaml.min';
 import { KeywordsMgr } from '..';
 
 export interface RpsMainConfig{

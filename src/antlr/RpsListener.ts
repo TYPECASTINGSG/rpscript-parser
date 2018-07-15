@@ -1,7 +1,7 @@
 import {Deferred} from "ts-deferred";
 // import {Logger} from '../core/logger';
 import fs from 'fs';
-import R from 'ramda';
+import * as R from '../../lib/ramda.min';
 import {ParserRuleContext} from 'antlr4ts';
 
 import {RPScriptListener} from './grammar/RPScriptListener';
