@@ -12,7 +12,6 @@ export class NpmModHelper {
         let version = result.substring(result.lastIndexOf('@')+1,result.indexOf('\n')).trim();
 
         let mod = result.substring(result.indexOf('+')+1,result.lastIndexOf('@')).trim();
-        mod.replace('@typecasting/','');
 
         return {
             version:version,

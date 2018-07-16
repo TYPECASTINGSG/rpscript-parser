@@ -49,7 +49,7 @@ export class ModuleMgr {
             //save module info
             this.configStore.set(installedInfo['name'],{
                 name:installedInfo['name'],
-                npmModuleName:moduleName,
+                npmModuleName:installedInfo['npmModuleName'],
                 npmVersion:installedInfo['version'],
                 enabled:true
             });
@@ -77,14 +77,13 @@ export class ModuleMgr {
         let modClazz = mod.default;
         let moduleName = modClazz['rpsModuleName'];
 
-        return {clazz:modClazz,name:moduleName,version:result.version,npm:result};
+        return {clazz:modClazz,name:moduleName,version:result.version,npm:result,npmModuleName:result.moduleName};
     }
 
 
-    async removeModule (npmModuleName:string) : Promise<void>{
+    async removeModule (moduleName:string) : Promise<void>{
         try{
-            if(!npmModuleName.trim().startsWith('rpscript-api-')) 
-                npmModuleName = 'rpscript-api-' + npmModuleName.trim();
+            let npmModuleName = this.getModuleNpmName(moduleName);
 
             let removeInfo = NpmModHelper.removeNpmModule(npmModuleName);
 
@@ -164,6 +163,12 @@ export class ModuleMgr {
             return modObj[moduleUse][bestFit.methodName].apply(this,args);
             
         }
+    }
+
+    private getModuleNpmName(moduleName:string) :string {
+        let npmName = this.configStore.all[moduleName]['npmModuleName'];
+
+        return npmName;
     }
 
 
