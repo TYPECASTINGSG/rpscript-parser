@@ -9,6 +9,8 @@ const HOMEDIR = require('os').homedir();
 
 export class ModuleMgr {
     readonly CONFIG_NAME = "rpscript";
+    readonly NPM_MOD_PREFIX = "rpscript-api-";
+    readonly NPM_MOD_ORG_PREFIX = "@typecasting/rpscript-api-";
 
     static readonly MOD_INSTALLED_NPM_EVT = "runner.module.installed.npm";
     static readonly MOD_INSTALLED_CONFIG_EVT = "runner.module.installed.config";
@@ -34,13 +36,13 @@ export class ModuleMgr {
         this.event = new EventEmitter;
     }
 
-    async installModule (npmModuleName:string) :Promise<RpsModuleModel> {
+    async installModule (npmModuleName:string,allowExtModule?:boolean) :Promise<RpsModuleModel> {
 
         try{
-            if(!npmModuleName.trim().startsWith('rpscript-api-')) 
-                npmModuleName = 'rpscript-api-' + npmModuleName.trim();
+            let prefix = allowExtModule ? this.NPM_MOD_PREFIX : this.NPM_MOD_ORG_PREFIX;
+            
+            if(!npmModuleName.trim().startsWith(prefix)) npmModuleName = prefix + npmModuleName.trim();
 
-            let moduleName = npmModuleName.indexOf('@') > 0 ? npmModuleName.substring(0,npmModuleName.indexOf('@')) : npmModuleName;
             let installedInfo = await this.installFromNpm(npmModuleName);
 
             this.event.emit(ModuleMgr.MOD_INSTALLED_NPM_EVT, installedInfo);
