@@ -6,7 +6,7 @@ import {ParserRuleContext} from 'antlr4ts';
 
 import {RPScriptListener} from './grammar/RPScriptListener';
 import {ExeFnContext, IncludeContext,SymbolContext, VariableContext,LiteralContext,OptListContext,ParamContext,ParamListContext,ProgramContext, BlockContext,PipeActionsContext, SingleActionContext,
-  SingleExpressionContext,IfelseStatementContext, ElifStatementContext,ElseStatementContext,IfStatementContext , StatementContext,NamedFnContext, ActionContext, AnonFnContext, OptContext, ArrayLiteralContext} from './grammar/RPScriptParser';
+  SingleExpressionContext,IfelseStatementContext, ElifStatementContext,ElseStatementContext,IfStatementContext , StatementContext,NamedFnContext, ActionContext, AnonFnContext, OptContext, ArrayLiteralContext, LetContext} from './grammar/RPScriptParser';
 
 import {ParseTreeProperty} from 'antlr4ts/tree';
 import {RPScriptParser} from '../antlr/grammar/RPScriptParser';
@@ -203,6 +203,22 @@ setTimeout(main, 100);
     else this.appendToScope(content);
   }
 
+  public exitLet(ctx:LetContext) : void{
+    let variable = ctx.variable().text;
+    
+    let val = ctx.singleExpression().text;
+    if(ctx.singleExpression().variable()) {
+      val = this.parseTreeProperty.get(ctx.singleExpression().variable());
+    } 
+    
+
+    let content = '\tvar '+variable + ' = '+val+ ' ; ';
+
+    if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);
+    else this.appendToScope(content);
+    
+  }
+
   public enterStatement(ctx:StatementContext) : void {}
   public exitStatement(ctx:StatementContext) : void {
     if(!!ctx.singleAction()){
@@ -219,6 +235,10 @@ setTimeout(main, 100);
     }
     else if(!!ctx.pipeActions()){
       let context = this.parseTreeProperty.get(ctx.pipeActions());
+      this.parseTreeProperty.set(ctx,context);
+    }
+    else if(!!ctx.let()){
+      let context = this.parseTreeProperty.get(ctx.let());
       this.parseTreeProperty.set(ctx,context);
     }
   }
@@ -337,6 +357,9 @@ setTimeout(main, 100);
   }
   private hasFnParent(ctx:ParserRuleContext) : boolean{
     return this.hasParent(ctx,'NamedFnContext') || this.hasParent(ctx,'AnonFnContext');
+  }
+  private hasNamedFnParent(ctx:ParserRuleContext) : boolean{
+    return this.hasParent(ctx,'NamedFnContext');
   }
   private hasPipeParent(ctx:ParserRuleContext) : boolean{
     return this.hasParent(ctx,'PipeActionsContext');

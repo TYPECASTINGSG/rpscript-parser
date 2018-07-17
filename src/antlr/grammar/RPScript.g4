@@ -41,7 +41,7 @@ exeFn   : DIRECTIVE WORD param*;
 
 include : DIRECTIVE INCLUDE StringLiteral;
 
-let : DIRECTIVE LET StringLiteral singleExpression;
+let : DIRECTIVE LET variable singleExpression;
 
 action : WORD paramList optList ;
 
