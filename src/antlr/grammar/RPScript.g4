@@ -16,7 +16,8 @@ statement
     | ifelseStatement
     | namedFn
     | NL
-    | include NL;
+    | include NL
+    | let;
 
 statementList : statement+;
 
@@ -39,6 +40,8 @@ namedFn : DIRECTIVE WORD variable* block;
 exeFn   : DIRECTIVE WORD param*;
 
 include : DIRECTIVE INCLUDE StringLiteral;
+
+let : DIRECTIVE LET StringLiteral singleExpression;
 
 action : WORD paramList optList ;
 
@@ -106,7 +109,7 @@ DIRECTIVE               : '@';
 IF                      : 'if';
 ELIF                    : 'elif';
 ELSE                    : 'else';
-IN                      : 'in';
+LET                      : 'let';
 INCLUDE                 : 'include';
 
 PIPE                    : '|';
