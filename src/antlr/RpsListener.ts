@@ -399,6 +399,7 @@ setTimeout(main, 100);
     let variable = ctx.text;
     if(ctx.text.trim().startsWith('$RESULT')) variable = '$CONTEXT.'+variable;
     else if(!this.hasFnParent(ctx))variable = '$CONTEXT.variables.'+variable;
+    else variable = "typeof "+variable+" != 'undefined' ? " + variable + " : $CONTEXT.variables."+variable;
 
     return variable;
   }
