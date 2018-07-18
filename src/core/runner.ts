@@ -61,10 +61,10 @@ export class Runner extends EventEmitter{
         this.wordMgr = new KeywordsMgr;
     }
 
-    async execute (filepath:string) :Promise<ExecResult>{
+    async execute (filepath:string, content?:string) :Promise<ExecResult>{
         this.emit(Runner.COMPILE_START_EVT,filepath);
         
-        let rpsContent = fs.readFileSync(filepath,'utf8');
+        let rpsContent = filepath ? fs.readFileSync(filepath,'utf8') : content;
         let transpileContent:TranspileContent;
 
         try {
