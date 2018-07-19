@@ -65,7 +65,9 @@ setTimeout(main, 100);
 
   keywordMgr:KeywordsMgr;
 
-  constructor(defer:Deferred<any>,filepath:string, parser:RPScriptParser){
+  skipKeywordCheck:boolean;
+
+  constructor(defer:Deferred<any>,filepath:string, parser:RPScriptParser,skipKeywordCheck?:boolean){
     this.deferred = defer;
     // this.logger = Logger.getInstance();
     this.filepath = filepath;
@@ -77,6 +79,7 @@ setTimeout(main, 100);
     }
     this.includeContent = [];
     this.keywordMgr = new KeywordsMgr;
+    this.skipKeywordCheck = skipKeywordCheck;
   }
 
   public enterProgram(ctx: ProgramContext) : void{
@@ -182,7 +185,7 @@ setTimeout(main, 100);
   }
 
   public enterNamedFn(ctx:NamedFnContext) : void {
-    let vars = R.map(v=>v.text, ctx.variable());
+    let vars = ctx.variable ? R.map(v=>v.text, ctx.variable()) : '';
     
     this.content.fnContent += `\nasync function ${ctx.WORD().text} (${vars}){\n`;
   }
@@ -193,7 +196,7 @@ setTimeout(main, 100);
   }
   public enterExeFn(ctx:ExeFnContext) : void {
     let vars = R.map(v=>{
-      if(v.variable()) return this.parseVar(v.variable());
+      if(v.variable && v.variable()) return this.parseVar(v.variable());
       else return v.text;
     }, ctx.param());
 
@@ -237,15 +240,17 @@ setTimeout(main, 100);
       let context = this.parseTreeProperty.get(ctx.pipeActions());
       this.parseTreeProperty.set(ctx,context);
     }
-    else if(!!ctx.let()){
+    else if(!!ctx.let && !!ctx.let()){
       let context = this.parseTreeProperty.get(ctx.let());
       this.parseTreeProperty.set(ctx,context);
     }
   }
 
   public enterAction(ctx:ActionContext) : void {
-    if(!this.keywordMgr.isValidKeyword(ctx.WORD().text))
-      throw new InvalidKeywordException(ctx);
+    if(!this.skipKeywordCheck){
+      if(!this.keywordMgr.isValidKeyword(ctx.WORD().text))
+        throw new InvalidKeywordException(ctx);
+    }
 
     this.content.verbs.push(ctx.WORD().text.trim());
     

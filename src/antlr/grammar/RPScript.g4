@@ -46,7 +46,8 @@ let : DIRECTIVE LET variable singleExpression;
 action : WORD paramList optList ;
 
 paramList : param*;
-param : literal | variable | anonFn | symbol | action | singleExpression;
+param : singleExpression | anonFn | symbol | action;
+// param : singleExpression | literal | variable | anonFn | symbol | action;
 
 optList : opt*;
 opt   : '--' optName ('='literal)?;

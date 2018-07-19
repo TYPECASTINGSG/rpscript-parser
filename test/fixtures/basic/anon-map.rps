@@ -1,3 +1,8 @@
 map [1,2,3] @ $number {
-    echo $number
-}
+    ;console-log $number + 4
+    console-log `number sum : ${$number + 4}`
+} | as 'res'
+map [1,2,3] lodash 'isNumber'
+console-log $RESULT
+lodash 'isNumber' 3
+console-log $RESULT

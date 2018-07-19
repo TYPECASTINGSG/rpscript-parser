@@ -29,6 +29,7 @@ export interface RpsMainConfig{
     skipRun?:boolean;  //for verify
     modules?:string[];  //only run these modules
     configFilesLocation?:string;
+    skipKeywordCheck?:boolean;
 }
 export interface ExecResult {
     transpile?:TranspileContent
@@ -171,7 +172,8 @@ export class Runner extends EventEmitter{
         let lexer = this.setupLexer(content);
         let parser = this.setupParser(lexer);
 
-        let intentListener:RPScriptListener = new RpsTranspileListener(d,filepath,parser);
+        let intentListener:RPScriptListener = 
+            new RpsTranspileListener(d,filepath,parser,this.config.skipKeywordCheck);
         let context = parser.program();
 
         ParseTreeWalker.DEFAULT.walk(intentListener, context);
