@@ -1,7 +1,7 @@
-console-log "hel"+'lo'
 console-log 'hello' 'world'
 console-log 'hello' + 'world'
-;echo `hello`
-;echo "h"+"e"+"l"+'l'+`0`
-;echo `\n`
-;echo `\n`
+console-log `hello
+how are you
+i'm fine`
+console-log '\nasas\b'
+console-log "\n"
