@@ -139,8 +139,8 @@ TemplateStringLiteral:          '`' ('\\`' | ~'`')* '`';
 SYMBOL  : [A-Z][a-zA-Z0-9.]*;
 WORD  : [a-z][a-zA-Z0-9-]+;
 
-fragment DoubleStringCharacter       : ~["\\\r\n] | LineContinuation ;
-fragment SingleStringCharacter       : ~['\\\r\n] | LineContinuation ;
+fragment DoubleStringCharacter       : ~["\r\n] | LineContinuation ;
+fragment SingleStringCharacter       : ~['\r\n] | LineContinuation ;
 fragment LineContinuation            : '\\' [\r\n\u2028\u2029] ;
 fragment DecimalIntegerLiteral       : '0' | [1-9] [0-9]* ;
 fragment ExponentPart                : [eE] [+-]? [0-9]+ ;
