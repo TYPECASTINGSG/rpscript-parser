@@ -191,7 +191,7 @@ setTimeout(main, 100);
   }
   public exitNamedFn(ctx:NamedFnContext) : void {
     if(!this.lastContentWithSemiCon(this.content.fnContent)) this.content.fnContent += ';';
-    this.content.fnContent += '\treturn $CONTEXT.$RESULT;\n';
+    this.content.fnContent += '\n\treturn $CONTEXT.$RESULT;\n';
     this.content.fnContent += '\n}';
   }
   public enterExeFn(ctx:ExeFnContext) : void {

@@ -1,8 +1,8 @@
-map [1,2,3] @ $number {
-    ;console-log $number + 4
-    console-log `number sum : ${$number + 4}`
-} | as 'res'
-map [1,2,3] lodash 'isNumber'
-console-log $RESULT
-lodash 'isNumber' 3
-console-log $RESULT
+console-log 'hello' | as 'val'
+map [1,2,3] @ $number { 
+    console-log $number
+    @fnName $number
+    return $number
+}
+@fnName $val { return $val }
+map [1,2,3] @ $number { return $number }

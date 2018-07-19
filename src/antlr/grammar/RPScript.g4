@@ -9,8 +9,8 @@ sourceElements
     ;
 
 statement
-    : pipeActions (NL|EOF)
-    | singleAction (NL|EOF)
+    : pipeActions
+    | singleAction
     | comment
     | exeFn
     | ifelseStatement
