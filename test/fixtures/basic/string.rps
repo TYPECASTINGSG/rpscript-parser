@@ -5,3 +5,4 @@ how are you
 i'm fine`
 console-log '\nasas\b'
 console-log "\n"
+console-log `${$RESULT} is result`

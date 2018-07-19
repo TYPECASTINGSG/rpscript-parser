@@ -287,7 +287,12 @@ setTimeout(main, 100);
   }
   // literal | variable | anonFn | symbol | action;
   public enterLiteral(ctx:LiteralContext) : void {
-    this.parseTreeProperty.set(ctx,`${ctx.text}`);
+    let val = ctx.text;
+    if(ctx.TemplateStringLiteral()) {
+      val = val.replace(new RegExp('[$]RESULT', 'g'), '$CONTEXT.$RESULT');
+    }
+
+    this.parseTreeProperty.set(ctx,`${val}`);
   }
   public exitLiteral(ctx:LiteralContext) : void {
   }
