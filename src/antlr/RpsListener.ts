@@ -209,10 +209,15 @@ setTimeout(main, 100);
   public exitLet(ctx:LetContext) : void{
     let variable = ctx.variable().text;
     
-    let val = ctx.singleExpression().text;
-    if(ctx.singleExpression().variable()) {
-      val = this.parseTreeProperty.get(ctx.singleExpression().variable());
-    } 
+    let val;
+    if(ctx.singleExpression()){
+      val = ctx.singleExpression().text;
+      if(ctx.singleExpression().variable()) {
+        val = this.parseTreeProperty.get(ctx.singleExpression().variable());
+      }
+    } else if(ctx.action()) {
+      val = this.parseTreeProperty.get(ctx.action());
+    }
     
 
     let content = '\tvar '+variable + ' = '+val+ ' ; ';
