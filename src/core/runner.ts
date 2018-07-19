@@ -62,7 +62,7 @@ export class Runner extends EventEmitter{
         this.wordMgr = new KeywordsMgr;
     }
 
-    async execute (filepath:string, content?:string) :Promise<ExecResult>{
+    async execute (filepath:string, args:any[],content?:string) :Promise<ExecResult>{
         this.emit(Runner.COMPILE_START_EVT,filepath);
         
         let rpsContent = filepath ? fs.readFileSync(filepath,'utf8') : content;
@@ -97,8 +97,8 @@ export class Runner extends EventEmitter{
         return result;
     }
 
-    private async run (tsContent:string, verbs:string[]) {
-        let context = await this.initializeContext(verbs); //loading modules
+    private async run (tsContent:string, verbs:string[],args?:any[]) {
+        let context = await this.initializeContext(verbs,args); //loading modules
         
         this.setupModulesContext(context['$CONTEXT']); //calling modules' setup lifecycle
 
@@ -118,13 +118,13 @@ export class Runner extends EventEmitter{
         });
     }
 
-    async initializeContext(verbs:string[]) {
+    async initializeContext(verbs:string[],args:any[] = []) {
         let modMgr = new ModuleMgr
         
         modMgr.event.on(Runner.MOD_LOADED_EVT,(...params)=>this.emit(Runner.MOD_LOADED_EVT,params));
         modMgr.event.on(Runner.MOD_DISABLED_EVT,(...params)=>this.emit(Runner.MOD_DISABLED_EVT,params));
 
-        let rpsContext = this.initRpsContext(this.config.configFilesLocation);
+        let rpsContext = this.initRpsContext(this.config.configFilesLocation,args);
 
         let modulesToBeLoaded = this.determineModulesToLoad(verbs);
         let context = await modMgr.loadModuleObjs(rpsContext,modulesToBeLoaded);
@@ -147,8 +147,9 @@ export class Runner extends EventEmitter{
     }
 
     //config convention: rps-<module-id>.yaml
-    initRpsContext(configLoc?:string) :RpsContext {
+    initRpsContext(configLoc:string,args:any[]) :RpsContext {
         let ctx = new RpsContext();
+        ctx['env'] = args; // ctx.setEnvArgs(args);
         
         let configPath = configLoc ? configLoc : process.cwd();
         let pathfiles = shell.ls(configPath);

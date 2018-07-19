@@ -80,7 +80,7 @@ varParams    : '(' singleExpression* ')';
 literal
     : NullLiteral | BooleanLiteral
     | StringLiteral | TemplateStringLiteral
-    | DecimalLiteral;
+    | DecimalLiteral | EnvVarLiteral;
 symbol : SYMBOL;
     
 optName : WORD ;
@@ -116,6 +116,7 @@ INCLUDE                 : 'include';
 PIPE                    : '|';
 
 
+EnvVarLiteral           : '$$' [0-9]+ ' '*;
 VAR                     : [$][a-zA-Z0-9]+ ' '*;
 FUNCTION                : [.][a-zA-Z0-9]+ ' '*;
 

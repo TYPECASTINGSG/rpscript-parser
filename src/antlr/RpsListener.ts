@@ -211,10 +211,12 @@ setTimeout(main, 100);
     
     let val;
     if(ctx.singleExpression()){
-      val = ctx.singleExpression().text;
       if(ctx.singleExpression().variable()) {
         val = this.parseTreeProperty.get(ctx.singleExpression().variable());
-      }
+      }else val = this.parseTreeProperty.get(ctx.singleExpression());
+
+      if(!val) val = ctx.singleExpression().text;
+      
     } else if(ctx.action()) {
       val = this.parseTreeProperty.get(ctx.action());
     }
@@ -291,6 +293,10 @@ setTimeout(main, 100);
     if(ctx.TemplateStringLiteral()) {
       val = val.replace(new RegExp('[$]RESULT', 'g'), '$CONTEXT.$RESULT');
     }
+    if(ctx.EnvVarLiteral()) {
+      val = val.substr(2);
+      val = '$CONTEXT.env['+val+']';
+    }
 
     this.parseTreeProperty.set(ctx,`${val}`);
   }
@@ -334,10 +340,11 @@ setTimeout(main, 100);
     if(ctx.variable && ctx.variable())
       this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.variable()) );
     else if(ctx.literal && ctx.literal()){
-      let template = ctx.literal().TemplateStringLiteral();
-      if(template) {
+      let template = ctx.literal().TemplateStringLiteral(), env = ctx.literal().EnvVarLiteral();
+      if(template || env) 
         this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.literal()) );
-      }else this.parseTreeProperty.set(ctx,ctx.text);
+      
+      else this.parseTreeProperty.set(ctx,ctx.text);
     }
     else
       this.parseTreeProperty.set(ctx,ctx.text);
