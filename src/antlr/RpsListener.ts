@@ -298,7 +298,8 @@ setTimeout(main, 100);
   }
   public exitVariable(ctx:VariableContext) : void {}
   public enterSymbol(ctx:SymbolContext) : void {
-    this.parseTreeProperty.set(ctx,`${ctx.text}`);
+    var lower = ctx.text.charAt(0).toLowerCase() + ctx.text.substr(1);
+    this.parseTreeProperty.set(ctx,`Symbol('${lower}')`);
   }
   public exitSymbol(ctx:SymbolContext) : void {}
   public enterAnonFn(ctx:AnonFnContext) : void{

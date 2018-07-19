@@ -1,8 +1,12 @@
-console-log 'hello' | as 'val'
+console-log 'hello' + ' world' | as 'val'
 map [1,2,3] @ $number { 
-    console-log $number
-    @fnName $number
-    return $number
-}
-@fnName $val { return $val }
+    return $number * 2
+} | as 'mapped'
+@fnName $val { console-log $val }
 map [1,2,3] @ $number { return $number }
+console-log $RESULT
+console-log $val
+console-log $mapped
+console-log '-----'
+@fnName 500
+console-log $RESULT

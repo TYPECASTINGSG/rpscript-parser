@@ -15,14 +15,14 @@ describe('Runner', () => {
   it.only('should run', async function() {
     let runner = new Runner({skipRun:true,skipKeywordCheck:true});
     let testpath = './test/fixtures/basic/';
-    let filesToTest = [
-      `${testpath}string.rps`,`${testpath}anon-map.rps`,`${testpath}dir-single-if.rps`,
-      `${testpath}dir-single-ifelseif.rps`,`${testpath}function-args.rps`,`${testpath}function.rps`,
-      `${testpath}let-simple.rps`,`${testpath}pipeline-simple.rps`,//`${testpath}include-simple.rps`,
-      `${testpath}single-2-actions.rps`,`${testpath}single-dash.rps`,`${testpath}single-multiline.rps`,
-      `${testpath}single-simple.rps`,`${testpath}single-var.rps`,`${testpath}symbol-simple.rps`];
+    // let filesToTest = [
+    //   `${testpath}string.rps`,`${testpath}anon-map.rps`,`${testpath}dir-single-if.rps`,
+    //   `${testpath}dir-single-ifelseif.rps`,`${testpath}function-args.rps`,`${testpath}function.rps`,
+    //   `${testpath}let-simple.rps`,`${testpath}pipeline-simple.rps`,//`${testpath}include-simple.rps`,
+    //   `${testpath}single-2-actions.rps`,`${testpath}single-dash.rps`,`${testpath}single-multiline.rps`,
+    //   `${testpath}single-simple.rps`,`${testpath}single-var.rps`,`${testpath}symbol-simple.rps`];
 
-      // let filesToTest = [`${testpath}anon-map.rps`]
+      let filesToTest = [`${testpath}symbol-simple.rps`]
     
     for(var i =0 ;i<filesToTest.length;i++){
       if(fs.existsSync(filesToTest[i]+'.js'))fs.unlinkSync(filesToTest[i]+'.js');
