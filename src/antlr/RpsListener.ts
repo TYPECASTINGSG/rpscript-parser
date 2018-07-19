@@ -263,13 +263,9 @@ setTimeout(main, 100);
       return this.parseTreeProperty.get(param.getChild(0));
     },ctx.paramList().param());
 
-    let opt = this.parseOpt(ctx.optList().opt());
+    let opt = this.parseOpt(ctx.optList().opt()) , joinList = pList.join(' , ');
 
-    let joinList = pList.join(' , ');
-
-    // if(keyword.split('.').length>1){
-    //   this.parseTreeProperty.set(ctx,`${keyword.trim()}( $CONTEXT , ${opt} , ${joinList})`);
-    // }else
+    
     if(joinList)
       this.parseTreeProperty.set(ctx,`await api("${keyword.trim()}" , $CONTEXT , ${opt} , ${joinList})`);
     else
@@ -295,13 +291,11 @@ setTimeout(main, 100);
 
     this.parseTreeProperty.set(ctx,`${variable}`);
   }
-  public exitVariable(ctx:VariableContext) : void {
-  }
+  public exitVariable(ctx:VariableContext) : void {}
   public enterSymbol(ctx:SymbolContext) : void {
     this.parseTreeProperty.set(ctx,`${ctx.text}`);
   }
-  public exitSymbol(ctx:SymbolContext) : void {
-  }
+  public exitSymbol(ctx:SymbolContext) : void {}
   public enterAnonFn(ctx:AnonFnContext) : void{
     let vars = R.map(v=>v.text, ctx.variable());
 
@@ -325,8 +319,11 @@ setTimeout(main, 100);
     this.parseTreeProperty.set(ctx,content);
   }
 
-  public enterSingleExpression(ctx:SingleExpressionContext) : void {
-    this.parseTreeProperty.set(ctx,ctx.text);
+  public exitSingleExpression(ctx:SingleExpressionContext) : void {
+    if(ctx.variable && ctx.variable())
+      this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.variable()) );
+    else
+      this.parseTreeProperty.set(ctx,ctx.text);
   }
 
   public enterInclude(ctx:IncludeContext) : void {
@@ -425,6 +422,7 @@ setTimeout(main, 100);
 
   private parseVar (ctx:VariableContext) :string {
     let variable = ctx.text;
+    
     if(ctx.text.trim().startsWith('$RESULT')) variable = '$CONTEXT.'+variable;
     else if(!this.hasFnParent(ctx))variable = '$CONTEXT.variables.'+variable;
     else variable = "typeof "+variable+" != 'undefined' ? " + variable + " : $CONTEXT.variables."+variable;
