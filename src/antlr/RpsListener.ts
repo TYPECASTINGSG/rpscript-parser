@@ -163,7 +163,7 @@ setTimeout(main, 100);
     let content = `\n\telse if(${ctx.singleExpression().text} ){\n`;
 
     if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);    
-    else this.appendToScope(`\t}`);
+    else this.appendToScope(content);
   }
   public exitElifStatement(ctx:ElifStatementContext) : void {
     let content = this.parseExitProperty(ctx,ctx.statementList().statement());
