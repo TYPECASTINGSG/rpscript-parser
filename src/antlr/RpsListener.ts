@@ -333,6 +333,12 @@ setTimeout(main, 100);
   public exitSingleExpression(ctx:SingleExpressionContext) : void {
     if(ctx.variable && ctx.variable())
       this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.variable()) );
+    else if(ctx.literal && ctx.literal()){
+      let template = ctx.literal().TemplateStringLiteral();
+      if(template) {
+        this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.literal()) );
+      }else this.parseTreeProperty.set(ctx,ctx.text);
+    }
     else
       this.parseTreeProperty.set(ctx,ctx.text);
   }
@@ -422,7 +428,6 @@ setTimeout(main, 100);
   private parseOpt (opts:OptContext[]):string{
     let obj = {};
     R.forEach(x => {
-        // let text = x.literal().StringLiteral() ? x.literal().StringLiteral().text.replace(/["']/g,'') : x.literal().text;
         let text = eval(x.literal().text);
         
         obj[x.optName().text] = text;
