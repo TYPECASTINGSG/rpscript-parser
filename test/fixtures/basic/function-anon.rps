@@ -1,9 +1,21 @@
-map $RESULT @ $item { replace-content $item "rpscript-api-" "" }
-@generateApis
+assign 'filename' "api-list.txt"
+assign 'sortedfilename' "sorted-api-list.txt"
+
+console-log $filename
+@writeSortedApis $filename $sortedfilename
+
+@writeSortedApis $readFile $writeFile {
+    console-log $readFile
+    ;read $readFile
+    ;lodash "split" $RESULT "\n"
+    ;write $writeFile columnify lodash "orderBy" $RESULT
+}
 
 
-@generateApis {
+;@generateApis $filename
+
+@generateApis $filename{
     glob "rpscript-api-*"
     map $RESULT @ $item { replace-content $item "rpscript-api-" "" }
-    console-log columnify chunk $RESULT 5
+    write $filename columnify chunk $RESULT 1
 }

@@ -196,8 +196,10 @@ setTimeout(main, 100);
   }
   public enterExeFn(ctx:ExeFnContext) : void {
     let vars = R.map(v=>{
-      if(v.variable && v.variable()) return this.parseVar(v.variable());
-      else return v.text;
+      let expr = v.getChild(0);
+
+      if(expr.variable && expr.variable()) return this.parseVar(expr.variable());
+      else return expr.text;
     }, ctx.param());
 
     let content = `\n\tawait ${ctx.WORD().text}(${vars});\n`;
