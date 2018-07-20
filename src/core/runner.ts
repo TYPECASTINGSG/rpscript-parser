@@ -82,7 +82,7 @@ export class Runner extends EventEmitter{
  
         this.emit(Runner.COMPILED_EVT , { transpile:tsContent });
         
-        if(!this.config.skipRun) this.run(tsContent,verbs);
+        if(!this.config.skipRun) this.run(tsContent,verbs,args);
         
 
         return { transpile:transpileContent };
