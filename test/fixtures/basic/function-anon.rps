@@ -1,0 +1,9 @@
+map $RESULT @ $item { replace-content $item "rpscript-api-" "" }
+@generateApis
+
+
+@generateApis {
+    glob "rpscript-api-*"
+    map $RESULT @ $item { replace-content $item "rpscript-api-" "" }
+    console-log columnify chunk $RESULT 5
+}

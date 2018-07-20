@@ -329,7 +329,7 @@ setTimeout(main, 100);
     
     let content = anon + sList.join('\n');
     
-    if(!this.lastContentWithSemiCon(this.content.fnContent)) content += ';';
+    if(!this.lastContentWithSemiCon(content)) content += ';';
     content += '\treturn $CONTEXT.$RESULT;\n';
     content += '\n}';
     
