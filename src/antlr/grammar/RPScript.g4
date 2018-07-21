@@ -41,9 +41,9 @@ exeFn   : DIRECTIVE WORD param*;
 
 include : DIRECTIVE INCLUDE StringLiteral;
 
-let : DIRECTIVE LET variable (singleExpression|action);
+let : DIRECTIVE LET variable (singleExpression | action);
 
-action : WORD paramList optList ;
+action : WORD paramList optList | '(' WORD paramList optList ')' ;
 
 paramList : param*;
 param : singleExpression | anonFn | symbol | action;

@@ -1,0 +1,3 @@
+echo "hello"
+console-log map (inc) [1,1,2,4]
+echo "hello" (csv "txt.txt" --hello=true) "world"
