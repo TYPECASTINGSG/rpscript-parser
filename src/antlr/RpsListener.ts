@@ -447,10 +447,12 @@ setTimeout(main, 100);
 
   private parseVar (ctx:VariableContext) :string {
     let variable = ctx.text;
-    
+    let parsedVar = "typeof "+variable+" != 'undefined' ? " + variable + " : $CONTEXT.variables."+variable;
+
     if(ctx.text.trim().startsWith('$RESULT')) variable = '$CONTEXT.'+variable;
-    else if(!this.hasFnParent(ctx))variable = '$CONTEXT.variables.'+variable;
-    else variable = "typeof "+variable+" != 'undefined' ? " + variable + " : $CONTEXT.variables."+variable;
+    // else if(!this.hasFnParent(ctx))variable = '$CONTEXT.variables.'+variable;
+    else if(!this.hasFnParent(ctx))variable = parsedVar;
+    else variable = parsedVar;
 
     return variable;
   }
