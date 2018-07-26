@@ -12,12 +12,7 @@ statement
     : pipeActions
     | singleAction
     | comment
-    | exeFn
-    | ifelseStatement
-    | namedFn
-    | NL
-    | include NL
-    | let;
+    | NL;
 
 statementList : statement+;
 
@@ -25,51 +20,20 @@ pipeActions : action PIPE action;
 singleAction : action;
 comment : COMMENT;
 
-ifelseStatement : ifStatement elifStatement* elseStatement?;
-
-ifStatement : DIRECTIVE IF singleExpression '{' statementList '}' NL*;
-elifStatement : DIRECTIVE ELIF singleExpression '{' statementList '}' NL*;
-elseStatement : DIRECTIVE ELSE '{' statementList '}';
-
-//maybe replace it with $CONTEXT.$ERROR
-// tryStatement : TODO
-
-
-namedFn : DIRECTIVE WORD variable* block;
-
-exeFn   : DIRECTIVE WORD param*;
-
-include : DIRECTIVE INCLUDE StringLiteral;
-
-let : DIRECTIVE LET variable (singleExpression | action);
-
 action : WORD paramList optList | '(' WORD paramList optList ')' ;
 
 paramList : param*;
-param : singleExpression | anonFn | symbol | action;
+param : singleExpression | symbol | action;
 // param : singleExpression | literal | variable | anonFn | symbol | action;
 
 optList : opt*;
 opt   : '--' optName ('='literal)?;
 
-block : '{' statementList '}';
-
-anonFn : DIRECTIVE variable* block;
-
-singleExpression :             
-    // singleExpression '.' identifierName                                                                  
-      '+' singleExpression                                                   
-    | '-' singleExpression                                                   
-    | '!' singleExpression                                                   
-    | singleExpression ('*' | '/' | '%') singleExpression                    
-    | singleExpression ('+' | '-') singleExpression                          
-    | singleExpression ('<' | '>' | '<=' | '>=') singleExpression            
-    | singleExpression ('==' | '!=' | '===' | '!==') singleExpression        
-    | singleExpression '&&' singleExpression                                 
-    | singleExpression '||' singleExpression              
-    | literal                                                                
+singleExpression :                                                                    
+    literal                                                                
     | arrayLiteral  
-    | variable                                                         
+    | variable                                  
+    | action                       
     | objectLiteral;
 
 
@@ -93,43 +57,28 @@ arrayLiteral
 elementList
     : singleExpression (','+ singleExpression)* ;
 
-propertyAssignment
-    : propertyName (':' |'=') singleExpression
-    | '[' singleExpression ']' ':' singleExpression
-    ;
-propertyName : StringLiteral | DecimalLiteral;
+propertyAssignment : propertyName ':' singleExpression;
+propertyName : StringLiteral | DecimalLiteral | WORD | SYMBOL;
 eos : EOF;
 
 
 
 ///////////////////  LEXER  /////////////////////
 
-
 DIRECTIVE               : '@';
-
-IF                      : 'if';
-ELIF                    : 'elif';
-ELSE                    : 'else';
-LET                      : 'let';
-INCLUDE                 : 'include';
-
 PIPE                    : '|';
-
-
 EnvVarLiteral           : '$$' [0-9]+ ' '*;
 VAR                     : [$][a-zA-Z0-9]+ ' '*;
 FUNCTION                : [.][a-zA-Z0-9]+ ' '*;
 
-// COMMENT : ';' ~[\r\n]*;
 COMMENT : ';' ~[\r\n]* -> channel(HIDDEN);
-
 
 NullLiteral: 'null';
 BooleanLiteral: 'true' | 'false';
 DecimalLiteral: 
-       DecimalIntegerLiteral '.' [0-9]* ExponentPart?
+       '-'? DecimalIntegerLiteral '.' [0-9]* ExponentPart?
     |  '.' [0-9]+ ExponentPart?
-    |  DecimalIntegerLiteral ExponentPart? ;
+    |  '-'? DecimalIntegerLiteral ExponentPart? ;
 
 StringLiteral:                 ('"' DoubleStringCharacter* '"'
              |                  '\'' SingleStringCharacter* '\'')
@@ -138,7 +87,7 @@ StringLiteral:                 ('"' DoubleStringCharacter* '"'
 TemplateStringLiteral:          '`' ('\\`' | ~'`')* '`';
 
 SYMBOL  : [A-Z][a-zA-Z0-9.]*;
-WORD  : [a-z][a-zA-Z0-9-]+;
+WORD  : [a-z][a-zA-Z0-9-]* | '__';
 
 fragment DoubleStringCharacter       : ~["\r\n] | LineContinuation ;
 fragment SingleStringCharacter       : ~['\r\n] | LineContinuation ;

@@ -5,8 +5,8 @@ import * as R from '../../lib/ramda.min';
 import {ParserRuleContext} from 'antlr4ts';
 
 import {RPScriptListener} from './grammar/RPScriptListener';
-import {ExeFnContext, IncludeContext,SymbolContext, VariableContext,LiteralContext,OptListContext,ParamContext,ParamListContext,ProgramContext, BlockContext,PipeActionsContext, SingleActionContext,
-  SingleExpressionContext,IfelseStatementContext, ElifStatementContext,ElseStatementContext,IfStatementContext , StatementContext,NamedFnContext, ActionContext, AnonFnContext, OptContext, ArrayLiteralContext, LetContext} from './grammar/RPScriptParser';
+import {SymbolContext, VariableContext,LiteralContext,ObjectLiteralContext,ProgramContext, PipeActionsContext, SingleActionContext,
+  SingleExpressionContext, StatementContext, ActionContext, OptContext, ArrayLiteralContext, PropertyAssignmentContext} from './grammar/RPScriptParser';
 
 import {ParseTreeProperty} from 'antlr4ts/tree';
 import {RPScriptParser} from '../antlr/grammar/RPScriptParser';
@@ -88,32 +88,18 @@ setTimeout(main, 100);
     if(ctx.exception) throw ctx.exception;
     // if(ctx.exception) this.deferred.reject(ctx.exception)
     else {
-      this.getAllIncludeContents().then( fnContents => {
         this.content.fullContent += this.globalEventDeclare;
         this.content.fullContent += this.mainSectionStart;
         this.content.fullContent += this.content.mainContent;
         this.content.fullContent += this.mainSectionEnd;
         this.content.fullContent += this.content.fnContent;
 
-        fnContents.forEach(c => this.content.fullContent += c);
-
         this.content.fullContent += this.runSect;
   
         this.deferred.resolve(this.content);
-
-      });
-      
     }
   }
 
-  public enterBlock(ctx:BlockContext) : void {
-    if(this.hasFnParent(ctx)) this.scope = "function";
-    else this.scope = "root";
-  }
-  public exitBlock(ctx:BlockContext) : void {
-    if(this.hasFnParent(ctx.parent)) this.scope = "function";
-    else this.scope = "root";
-  }
 
   public exitPipeActions(ctx:PipeActionsContext) : void {
     
@@ -126,131 +112,13 @@ setTimeout(main, 100);
     else this.appendToScope(content);
   }
 
-  public exitIfelseStatement(ctx:IfelseStatementContext) : void {
-    let ifText = this.parseTreeProperty.get(ctx.ifStatement());
-    let elIfText:string[] = R.map(elIf => this.parseTreeProperty.get(elIf) , ctx.elifStatement());
-    let elseText = ctx.elseStatement() ? this.parseTreeProperty.get(ctx.elseStatement()) : '';
-
-    let fullText = ifText + elIfText.join('\n') + elseText;
-
-    this.parseTreeProperty.set(ctx,fullText);
-  }
-  public enterIfStatement(ctx:IfStatementContext) : void {
-    let content = `\n\tif(${ctx.singleExpression().text} ){\n`;
-   
-    if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);    
-    else this.appendToScope(content);
-  }
-  public exitIfStatement(ctx:IfStatementContext) : void {
-    let content = this.parseExitProperty(ctx,ctx.statementList().statement());
-
-    if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);
-    else this.appendToScope(`\t}`);
-  }
-
-  private parseExitProperty (ctx:ParserRuleContext, childrenList:ParserRuleContext[]) : string{
-    let anon = this.parseTreeProperty.get(ctx);
-
-    let sList:string[] = R.map(child => {
-      return this.parseTreeProperty.get(child);
-    }, childrenList);
-    
-    let content = anon + sList.join('\n') + '\n}';
-    return content;
-  }
-
-  public enterElifStatement(ctx:ElifStatementContext) : void {
-    let content = `\n\telse if(${ctx.singleExpression().text} ){\n`;
-
-    if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);    
-    else this.appendToScope(content);
-  }
-  public exitElifStatement(ctx:ElifStatementContext) : void {
-    let content = this.parseExitProperty(ctx,ctx.statementList().statement());
-
-    if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);
-    else this.appendToScope(`\t}`);
-  }
-  public enterElseStatement(ctx:ElseStatementContext) : void {
-    let content = `\n\telse{\n`;
-
-    if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);    
-    else this.appendToScope(content);
-  }
-  public exitElseStatement(ctx:ElseStatementContext) : void {
-    let content = this.parseExitProperty(ctx,ctx.statementList().statement());
-
-    if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);
-    else this.appendToScope(`\t}`);
-  }
-
-  public enterNamedFn(ctx:NamedFnContext) : void {
-    let vars = ctx.variable ? R.map(v=>v.text, ctx.variable()) : '';
-    
-    this.content.fnContent += `\nasync function ${ctx.WORD().text} (${vars}){\n`;
-  }
-  public exitNamedFn(ctx:NamedFnContext) : void {
-    if(!this.lastContentWithSemiCon(this.content.fnContent)) this.content.fnContent += ';';
-    this.content.fnContent += '\n\treturn $CONTEXT.$RESULT;\n';
-    this.content.fnContent += '\n}';
-  }
-  public enterExeFn(ctx:ExeFnContext) : void {
-    let vars = R.map(v=>{
-      let expr = v.getChild(0);
-
-      if(expr.variable && expr.variable()) return this.parseVar(expr.variable());
-      else return expr.text;
-    }, ctx.param());
-
-    let content = `\n\tawait ${ctx.WORD().text}(${vars});\n`;
-    
-    if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);
-    else this.appendToScope(content);
-  }
-
-  public exitLet(ctx:LetContext) : void{
-    let variable = ctx.variable().text;
-    
-    let val;
-    if(ctx.singleExpression()){
-      if(ctx.singleExpression().variable()) {
-        val = this.parseTreeProperty.get(ctx.singleExpression().variable());
-      }else val = this.parseTreeProperty.get(ctx.singleExpression());
-
-      if(!val) val = ctx.singleExpression().text;
-      
-    } else if(ctx.action()) {
-      val = this.parseTreeProperty.get(ctx.action());
-    }
-    
-
-    let content = '\tvar '+variable + ' = '+val+ ' ; ';
-
-    if(this.hasActionParent(ctx)) this.parseTreeProperty.set(ctx,content);
-    else this.appendToScope(content);
-    
-  }
-
-  public enterStatement(ctx:StatementContext) : void {}
   public exitStatement(ctx:StatementContext) : void {
     if(!!ctx.singleAction()){
       let action = this.parseTreeProperty.get(ctx.singleAction().action());
       this.parseTreeProperty.set(ctx,action);
     }
-    else if(!!ctx.ifelseStatement()){
-      let context = this.parseTreeProperty.get(ctx.ifelseStatement());
-      this.parseTreeProperty.set(ctx,context);
-    }
-    else if(!!ctx.exeFn()){
-      let context = this.parseTreeProperty.get(ctx.exeFn());
-      this.parseTreeProperty.set(ctx,context);
-    }
     else if(!!ctx.pipeActions()){
       let context = this.parseTreeProperty.get(ctx.pipeActions());
-      this.parseTreeProperty.set(ctx,context);
-    }
-    else if(!!ctx.let && !!ctx.let()){
-      let context = this.parseTreeProperty.get(ctx.let());
       this.parseTreeProperty.set(ctx,context);
     }
   }
@@ -284,9 +152,7 @@ setTimeout(main, 100);
       let content = "\t"+this.parseTreeProperty.get(ctx)+";\n";
 
       if(this.hasPipeParent(ctx)) {} //skip
-      else if(this.hasFnParent(ctx)) this.content.fnContent += content;
       else  this.content.mainContent += content;
-
     }
   }
   // literal | variable | anonFn | symbol | action;
@@ -302,93 +168,91 @@ setTimeout(main, 100);
 
     this.parseTreeProperty.set(ctx,`${val}`);
   }
-  public exitLiteral(ctx:LiteralContext) : void {
-  }
+
   public enterVariable(ctx:VariableContext) : void {
     let variable = this.parseVar(ctx);
 
     this.parseTreeProperty.set(ctx,`${variable}`);
   }
-  public exitVariable(ctx:VariableContext) : void {}
   public enterSymbol(ctx:SymbolContext) : void {
     var lower = ctx.text.charAt(0).toLowerCase() + ctx.text.substr(1);
     this.parseTreeProperty.set(ctx,`Symbol('${lower}')`);
-  }
-  public exitSymbol(ctx:SymbolContext) : void {}
-  public enterAnonFn(ctx:AnonFnContext) : void{
-    let vars = R.map(v=>v.text, ctx.variable());
-
-    this.parseTreeProperty.set(ctx,`async function (${vars}){\n`);
-  }
-  public exitAnonFn(ctx:AnonFnContext) : void{
-    let anon = this.parseTreeProperty.get(ctx);
-
-    let sList:string[] = R.map(statement => {
-
-      return this.parseTreeProperty.get(statement);
-    }, ctx.block().statementList().statement());
-
-    
-    let content = anon + sList.join('\n');
-    
-    if(!this.lastContentWithSemiCon(content)) content += ';';
-    content += '\treturn $CONTEXT.$RESULT;\n';
-    content += '\n}';
-    
-    this.parseTreeProperty.set(ctx,content);
   }
 
   public exitSingleExpression(ctx:SingleExpressionContext) : void {
     if(ctx.variable && ctx.variable())
       this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.variable()) );
+
     else if(ctx.literal && ctx.literal()){
       let template = ctx.literal().TemplateStringLiteral(), env = ctx.literal().EnvVarLiteral();
+
       if(template || env) 
         this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.literal()) );
       
       else this.parseTreeProperty.set(ctx,ctx.text);
+
+    }else if(ctx.action && ctx.action()) {
+      this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.action()) );
     }
+    else if(ctx.arrayLiteral && ctx.arrayLiteral()) {
+      this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.arrayLiteral()) );
+    }
+
+    else if(ctx.objectLiteral && ctx.objectLiteral()) {
+      this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.objectLiteral()) );
+    }
+
     else
       this.parseTreeProperty.set(ctx,ctx.text);
   }
 
-  public enterInclude(ctx:IncludeContext) : void {
-    let includeDir = ctx.StringLiteral().text.replace(/"/g,"");
-    let content = fs.readFileSync(includeDir,'utf8');
+  public exitArrayLiteral(ctx:ArrayLiteralContext){
+    //action , variable
+
+    let array = [];
+    for(var i =0;i<ctx.elementList().singleExpression().length;i++){
+      var expr = ctx.elementList().singleExpression()[i];
+
+      if(expr.action())array.push(this.parseTreeProperty.get(expr.action()));
+      else if(expr.variable())array.push(this.parseTreeProperty.get(expr.variable()));
+      else array.push(expr.text);
+    }
+    let arString = '['+array.join(',')+']';
+
+    this.parseTreeProperty.set(ctx, arString);
+  }
+
+  public exitObjectLiteral(ctx:ObjectLiteralContext){
+    //action , variable
+
+    let array = [];
+    for(var i =0;i<ctx.propertyAssignment().length;i++){
+      var expr = ctx.propertyAssignment()[i];
+      array.push( this.parseTreeProperty.get(expr) );
+    }
+    let arString = '{'+array.join(',')+'}';
     
-    this.addInclude(includeDir,content);
 
-    let runner = new Runner({skipRun:true});
-    runner.convertToTS(includeDir,content).then(tsContent => {
-      this.updateIncludeTranslator(includeDir,tsContent.fnContent);
-    }).catch(err => {
-      console.error('HIGH ALERT!!!!!!');
-      console.error(err);
-      this.removeInclude(includeDir);
-    });
-
+    this.parseTreeProperty.set(ctx, arString);
   }
-  public exitInclude(ctx:IncludeContext) : void {}
+  public exitPropertyAssignment(ctx:PropertyAssignmentContext){
+    let propName = ctx.propertyName().text;
 
-  private containsActionContext(params:ParamContext[]) : boolean{
-    return R.any( p => {
-      return p.getChild(0) instanceof ActionContext
-    }, params );
+    let expression = ctx.singleExpression();
+    //@ts-ignore
+    let expr = this.parseTreeProperty.get(expression);
+    
+    let pair = propName + ':' + expr;
+
+    this.parseTreeProperty.set(ctx, pair);
   }
 
-  private capitalize(word:string): string {
-    return word.trim().charAt(0).toUpperCase() + word.trim().slice(1);
-  }
+  /**************************************************************/
 
   private hasActionParent(ctx:ParserRuleContext) : boolean{
     return this.hasParent(ctx,'ActionContext');
   }
-  private hasFnParent(ctx:ParserRuleContext) : boolean{
-    return this.hasParent(ctx,'NamedFnContext') || this.hasParent(ctx,'AnonFnContext');
-  }
-  private hasNamedFnParent(ctx:ParserRuleContext) : boolean{
-    return this.hasParent(ctx,'NamedFnContext');
-  }
+
   private hasPipeParent(ctx:ParserRuleContext) : boolean{
     return this.hasParent(ctx,'PipeActionsContext');
   }
@@ -407,33 +271,6 @@ setTimeout(main, 100);
     return isFnParent;
   }
 
-  addInclude(dir:string,rpsContent:string) {
-    this.includeContent.push({dir,rpsContent});
-  }
-  removeInclude(dir:string) {
-    this.includeContent = 
-        R.filter( incl => incl.dir !== dir, this.includeContent);
-  }
-  updateIncludeTranslator(dir:string, tsContent:string) {
-    let t = R.find(R.propEq('dir', dir))(this.includeContent);
-    t.tsContent = tsContent;
-  }
-  private hasAllIncludeCompleted(): boolean{
-    return R.all( (incl) => !!incl.tsContent, this.includeContent);
-}
-
-  includeInterval = null;
-  getAllIncludeContents () :Promise<string[]>{
-      return new Promise((resolve,reject) => {
-          this.includeInterval = setInterval( () => {
-              if(this.hasAllIncludeCompleted()) {
-                  clearInterval(this.includeInterval);
-                  resolve(R.map( incl => incl.tsContent, this.includeContent));
-              } 
-          },100);
-      })
-  }
-
   private parseOpt (opts:OptContext[]):string{
     let obj = {};
     R.forEach(x => {
@@ -447,27 +284,17 @@ setTimeout(main, 100);
 
   private parseVar (ctx:VariableContext) :string {
     let variable = ctx.text;
-    let parsedVar = "typeof "+variable+" != 'undefined' ? " + variable + " : $CONTEXT.variables."+variable;
+    // let parsedVar = "typeof "+variable+" != 'undefined' ? " + variable + " : $CONTEXT.variables."+variable;
+    let parsedVar = "$CONTEXT.variables."+variable;
 
     if(ctx.text.trim().startsWith('$RESULT')) variable = '$CONTEXT.'+variable;
-    // else if(!this.hasFnParent(ctx))variable = '$CONTEXT.variables.'+variable;
-    else if(!this.hasFnParent(ctx))variable = parsedVar;
     else variable = parsedVar;
 
     return variable;
   }
 
-
   private appendToScope (content:string) : void{
     if(this.scope === 'root') this.content.mainContent += content;
     else this.content.fnContent += content;
-  }
-
-  private lastContentWithSemiCon (content:string) : boolean {
-    let temp = content.trim();
-    let lastchar = temp[ temp.length - 1 ];
-
-    if(lastchar===';')return true;
-    else return false;
   }
 }

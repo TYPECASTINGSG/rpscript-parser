@@ -1,4 +1,0 @@
-@let $val 1
-@let $val2 'strv'
-@let $val3 1+3
-@let $val4 console-log 'hello'

@@ -1,0 +1,5 @@
+assign 'ghf' {'a':1,'b':'qwe'}
+assign 'hij' {'c':$item , 'd':echo}
+assign 'hij' {'c':$item , 'd':(echo 10)}
+
+assign 'abc' {c:$item , 'd':(echo 10)}

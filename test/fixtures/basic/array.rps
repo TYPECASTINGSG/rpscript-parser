@@ -1,0 +1,8 @@
+assign 'ghf' [$item,$money]
+assign 'hij' [ 'echo' , 'add']
+assign 'hij' [ 'echo' , 'add' , ['a','v']]
+assign 'hij' [ echo , add]
+map (add) [1,-2,-4]
+wait 2 echo "hello world"
+console-log 'hllo' | as 'lol'
+echo $lol
