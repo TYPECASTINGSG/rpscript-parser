@@ -144,9 +144,9 @@ setTimeout(main, 100);
 
     
     if(joinList)
-      this.parseTreeProperty.set(ctx,`await api("${keyword.trim()}" , $CONTEXT , ${opt} , ${joinList})`);
+      this.parseTreeProperty.set(ctx,`api("${keyword.trim()}" , $CONTEXT , ${opt} , ${joinList})`);
     else
-      this.parseTreeProperty.set(ctx,`await api("${keyword.trim()}" , $CONTEXT , ${opt} )`);
+      this.parseTreeProperty.set(ctx,`api("${keyword.trim()}" , $CONTEXT , ${opt} )`);
 
     if(!this.hasActionParent(ctx)){
       let content = "\t"+this.parseTreeProperty.get(ctx)+";\n";
@@ -158,7 +158,7 @@ setTimeout(main, 100);
 
   public exitShortFn(ctx:ShortFnContext) : void {
     let params = ctx.variable().map(x=>x.text);
-    let val = 'async ('+params.join(',')+') => ' + this.parseTreeProperty.get(ctx.action());
+    let val = '('+params.join(',')+') => ' + this.parseTreeProperty.get(ctx.action());
     
     this.parseTreeProperty.set(ctx,val);
   }

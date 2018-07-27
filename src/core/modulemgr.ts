@@ -4,6 +4,7 @@ import {RpsContext,RpsModuleModel,RpsActionModel} from 'rpscript-interface';
 import {KeywordsMgr} from './keywordsmgr';
 import {NpmModHelper} from '../helper/npmMod';
 import { EventEmitter } from 'events';
+import deasyncPromise from 'deasync-promise';
 
 const HOMEDIR = require('os').homedir();
 
@@ -162,8 +163,9 @@ export class ModuleMgr {
             let moduleUse = bestFit.moduleName;
             if(opt['module']) moduleUse = opt['module'];
 
-            return modObj[moduleUse][bestFit.methodName].apply(this,args);
-            
+            let promise = modObj[moduleUse][bestFit.methodName].apply(this,args);
+
+            return deasyncPromise(promise);
         }
     }
 

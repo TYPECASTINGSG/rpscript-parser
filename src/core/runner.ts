@@ -88,9 +88,27 @@ export class Runner extends EventEmitter{
         return { transpile:transpileContent };
     }
 
+    //this is for debug purpose only
+    async exeFromSource (fileName:string) {
+        let output:string = fs.readFileSync(fileName,'utf8');
+
+        let modMgr = new ModuleMgr;
+
+        let rpsContext = this.initRpsContext(this.config.configFilesLocation,[]);
+
+        let modulesToBeLoaded = modMgr.listModuleNames();
+        let context = await modMgr.loadModuleObjs(rpsContext,modulesToBeLoaded);
+
+        context['EventEmitter'] = EventEmitter;
+        context['$CONTEXT'] = rpsContext;
+        
+        this.setupModulesContext(context['$CONTEXT']); //calling modules' setup lifecycle
+
+        await _eval(output,context,true);
+    }
+
     private async transpile(filepath:string, filecontent:string):Promise<TranspileContent>{
         let result = await this.convertToTS(filepath, filecontent);
-        let tsContent = result.fullContent;
 
         this.emit(Runner.TRANSPILE_EVT,result);
 
