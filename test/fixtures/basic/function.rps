@@ -1,0 +1,2 @@
+assign 'fn' ( $item, $index ) => concat $item $index
+console-log call $fn "item" 'index'

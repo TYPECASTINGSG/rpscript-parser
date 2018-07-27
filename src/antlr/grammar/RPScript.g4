@@ -30,13 +30,15 @@ optList : opt*;
 opt   : '--' optName ('='literal)?;
 
 singleExpression :                                                                    
-    literal                                                                
+    literal                                               
+    | shortFn                 
     | arrayLiteral  
     | variable                                  
     | action                       
     | objectLiteral;
 
 
+shortFn : '(' (variable (',' variable)*)? ')' '=>' action;
 // variable : VAR funct*;
 variable : VAR varParams? ( varFunction varParams? ) *;
 varFunction : FUNCTION;

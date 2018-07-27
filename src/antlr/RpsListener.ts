@@ -6,7 +6,7 @@ import {ParserRuleContext} from 'antlr4ts';
 
 import {RPScriptListener} from './grammar/RPScriptListener';
 import {SymbolContext, VariableContext,LiteralContext,ObjectLiteralContext,ProgramContext, PipeActionsContext, SingleActionContext,
-  SingleExpressionContext, StatementContext, ActionContext, OptContext, ArrayLiteralContext, PropertyAssignmentContext} from './grammar/RPScriptParser';
+  SingleExpressionContext, StatementContext, ActionContext, OptContext, ArrayLiteralContext, PropertyAssignmentContext, ShortFnContext} from './grammar/RPScriptParser';
 
 import {ParseTreeProperty} from 'antlr4ts/tree';
 import {RPScriptParser} from '../antlr/grammar/RPScriptParser';
@@ -155,6 +155,14 @@ setTimeout(main, 100);
       else  this.content.mainContent += content;
     }
   }
+
+  public exitShortFn(ctx:ShortFnContext) : void {
+    let params = ctx.variable().map(x=>x.text);
+    let val = 'async ('+params.join(',')+') => ' + this.parseTreeProperty.get(ctx.action());
+    
+    this.parseTreeProperty.set(ctx,val);
+  }
+
   // literal | variable | anonFn | symbol | action;
   public enterLiteral(ctx:LiteralContext) : void {
     let val = ctx.text;
@@ -200,6 +208,10 @@ setTimeout(main, 100);
 
     else if(ctx.objectLiteral && ctx.objectLiteral()) {
       this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.objectLiteral()) );
+    }
+
+    else if(ctx.shortFn && ctx.shortFn()) {
+      this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.shortFn()) );
     }
 
     else
@@ -257,6 +269,10 @@ setTimeout(main, 100);
     return this.hasParent(ctx,'PipeActionsContext');
   }
 
+  private hasShortFnParent(ctx:ParserRuleContext) : boolean{
+    return this.hasParent(ctx,'ShortFnContext');
+  }
+
   hasParent(ctx:ParserRuleContext,parentName:string) : boolean{
     let ctxTemp:any = ctx.parent;
     let isFnParent:boolean = false;
@@ -285,7 +301,7 @@ setTimeout(main, 100);
   private parseVar (ctx:VariableContext) :string {
     let variable = ctx.text;
     // let parsedVar = "typeof "+variable+" != 'undefined' ? " + variable + " : $CONTEXT.variables."+variable;
-    let parsedVar = "$CONTEXT.variables."+variable;
+    let parsedVar = this.hasShortFnParent(ctx) ? variable : "$CONTEXT.variables."+variable;
 
     if(ctx.text.trim().startsWith('$RESULT')) variable = '$CONTEXT.'+variable;
     else variable = parsedVar;
