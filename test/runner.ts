@@ -13,12 +13,12 @@ describe('Runner', () => {
     
   });
   
-  it.only('should run generated temp file',async function () {
+  it('should run generated temp file',async function () {
     let runner = new Runner({skipRun:true,skipKeywordCheck:true});
     runner.exeFromSource(__dirname+'/fixtures/basic/single-simple.rps.js');
   });
 
-  it('should run', async function() {
+  it.only('should generate js', async function() {
     let runner = new Runner({skipRun:true,skipKeywordCheck:true});
     let testpath = './test/fixtures/basic/';
     // let filesToTest = [
@@ -26,7 +26,7 @@ describe('Runner', () => {
     //   `${testpath}single-2-actions.rps`,`${testpath}single-dash.rps`,`${testpath}single-multiline.rps`,
     //   `${testpath}single-simple.rps`,`${testpath}single-var.rps`,`${testpath}symbol-simple.rps`];
 
-      let filesToTest = [`${testpath}single-simple.rps`]
+      let filesToTest = [`${testpath}array.rps`]
     
     for(var i =0 ;i<filesToTest.length;i++){
       if(fs.existsSync(filesToTest[i]+'.js'))fs.unlinkSync(filesToTest[i]+'.js');

@@ -53,11 +53,10 @@ optName : WORD ;
 objectLiteral
     : '{' (propertyAssignment (',' propertyAssignment)*)? ','? '}';
 
-arrayLiteral
-    : '[' ','* elementList? ','* ']' ;
+arrayLiteral : '[' '\n'* elementList? '\n'* ']' '\n'* ;
 
 elementList
-    : singleExpression (','+ singleExpression)* ;
+    : singleExpression (','+ '\n'* singleExpression)* ;
 
 propertyAssignment : propertyName ':' singleExpression;
 propertyName : StringLiteral | DecimalLiteral | WORD | SYMBOL;
