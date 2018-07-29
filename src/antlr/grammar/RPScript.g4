@@ -1,17 +1,13 @@
 grammar RPScript;
 
-program
-    : sourceElements? EOF
-    ;
+program : sourceElements? EOF ;
 
-sourceElements
-    : statement+
-    ;
+sourceElements : statement+ ;
 
 statement
-    : pipeActions
-    | singleAction
-    | comment
+    : singleAction NL
+    | pipeActions NL
+    | comment NL
     | NL;
 
 statementList : statement+;
@@ -23,7 +19,7 @@ comment : COMMENT;
 action : WORD paramList optList | '(' WORD paramList optList ')' ;
 
 paramList : param*;
-param : singleExpression | symbol | action;
+param : singleExpression;
 // param : singleExpression | literal | variable | anonFn | symbol | action;
 
 optList : opt*;
@@ -34,11 +30,12 @@ singleExpression :
     | shortFn                 
     | arrayLiteral  
     | variable                                  
-    | action                       
+    | action            
+    | symbol           
     | objectLiteral;
 
 
-shortFn : '(' (variable (',' variable)*)? ')' '=>' action;
+shortFn : '(' (variable (COMMA_SEPERATOR variable)*)? ')' '=>' action;
 // variable : VAR varParams? ( varFunction varParams? ) *;
 variable : VAR;
 varFunction : FUNCTION;
@@ -51,16 +48,16 @@ symbol : SYMBOL;
     
 optName : WORD ;
 objectLiteral
-    : '{' (propertyAssignment (',' propertyAssignment)*)? ','? '}';
+    : OPEN_CURLY_BRACKET (propertyAssignment (COMMA_SEPERATOR propertyAssignment)*)? COMMA_SEPERATOR? CLOSE_CURLY_BRACKET;
 
-arrayLiteral : '[' '\n'* elementList? '\n'* ']' '\n'* ;
+arrayLiteral : OPEN_BRACKET  elementList?  CLOSE_BRACKET ;
+// arrayLiteral : '[' ('\n')? elementList? ']' ;
 
-elementList
-    : singleExpression (','+ '\n'* singleExpression)* ;
+elementList : singleExpression (COMMA_SEPERATOR singleExpression)* ;
+// elementList : singleExpression (','+ '\n'* singleExpression)* ;
 
 propertyAssignment : propertyName ':' singleExpression;
 propertyName : StringLiteral | DecimalLiteral | WORD | SYMBOL;
-eos : EOF;
 
 
 
@@ -68,6 +65,11 @@ eos : EOF;
 
 DIRECTIVE               : '@';
 PIPE                    : '|';
+OPEN_CURLY_BRACKET      : '{'[\n]*;
+CLOSE_CURLY_BRACKET     : [\n]*'}';
+OPEN_BRACKET            : '['[\n]*;
+CLOSE_BRACKET           : [\n]*']';
+COMMA_SEPERATOR         : [\n]*[,][\n]*;
 EnvVarLiteral           : '$$' [0-9]+ ' '*;
 VAR                     : [$][a-zA-Z0-9]+ ' '*;
 FUNCTION                : [.][a-zA-Z0-9]+ ' '*;
@@ -96,7 +98,6 @@ fragment LineContinuation            : '\\' [\r\n\u2028\u2029] ;
 fragment DecimalIntegerLiteral       : '0' | [1-9] [0-9]* ;
 fragment ExponentPart                : [eE] [+-]? [0-9]+ ;
 
-NL : '\r'? '\n';
-
 // WS : [ \t\r\n]+ -> skip ;
+NL : '\r'? '\n';
 WS : [ \t]+ -> skip ;

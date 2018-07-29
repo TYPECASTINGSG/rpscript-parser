@@ -1,15 +1,14 @@
-assign 'lol' [
-    [1,2,3],
-[1,2,3],
-    [7,8,[1,
-    2,3]]
+log 'something'
+log funny 'something' | as 'value'
+log $val
+log ($val)=>echo $vaal
+log {
+     a: 1,
+     b : 2
+}
+log [
+     [ 1 , 2 , 4 ] , [ 1 , 2 , 4 ] ,
+     [ 1 , 2 , 4 ] , [ 1 , 2 , 4 ],
+     [12,3],
+     '1212'
 ]
-assign 'abc' [[1,2,3],[4,5,6],[7,8,9]]
-;assign 'ghf' [$item,$money]
-;assign 'hij' [ 'echo' , 'add']
-;assign 'hij' [ 'echo' , 'add' , ['a','v']]
-;assign 'hij' [ echo , add]
-;map (add) [1,-2,-4]
-;wait 2 echo "hello world"
-;console-log 'hllo' | as 'lol'
-;echo $lol
