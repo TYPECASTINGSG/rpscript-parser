@@ -219,19 +219,22 @@ setTimeout(main, 100);
   }
 
   public exitArrayLiteral(ctx:ArrayLiteralContext){
-    //action , variable
-
-    let array = [];
-    for(var i =0;i<ctx.elementList().singleExpression().length;i++){
-      var expr = ctx.elementList().singleExpression()[i];
-
-      if(expr.action())array.push(this.parseTreeProperty.get(expr.action()));
-      else if(expr.variable())array.push(this.parseTreeProperty.get(expr.variable()));
-      else array.push(expr.text);
+    if(!ctx.elementList()) this.parseTreeProperty.set(ctx,'[]');
+    else {
+      let array = [];
+      for(var i =0;i<ctx.elementList().singleExpression().length;i++){
+        var expr = ctx.elementList().singleExpression()[i];
+  
+        if(expr.action())array.push(this.parseTreeProperty.get(expr.action()));
+        else if(expr.variable())array.push(this.parseTreeProperty.get(expr.variable()));
+        else if(expr.arrayLiteral())array.push(this.parseTreeProperty.get(expr.arrayLiteral()));
+        else if(expr.objectLiteral())array.push(this.parseTreeProperty.get(expr.objectLiteral()));
+        else array.push(expr.text);
+      }
+      let arString = '['+array.join(',')+']';
+  
+      this.parseTreeProperty.set(ctx, arString);
     }
-    let arString = '['+array.join(',')+']';
-
-    this.parseTreeProperty.set(ctx, arString);
   }
 
   public exitObjectLiteral(ctx:ObjectLiteralContext){

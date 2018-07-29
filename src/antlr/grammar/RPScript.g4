@@ -39,8 +39,8 @@ singleExpression :
 
 
 shortFn : '(' (variable (',' variable)*)? ')' '=>' action;
-// variable : VAR funct*;
-variable : VAR varParams? ( varFunction varParams? ) *;
+// variable : VAR varParams? ( varFunction varParams? ) *;
+variable : VAR;
 varFunction : FUNCTION;
 varParams    : '(' singleExpression* ')';
 literal
