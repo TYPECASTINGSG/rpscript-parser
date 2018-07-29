@@ -65,11 +65,11 @@ propertyName : StringLiteral | DecimalLiteral | WORD | SYMBOL;
 
 DIRECTIVE               : '@';
 PIPE                    : '|';
-OPEN_CURLY_BRACKET      : '{'[\n]*;
-CLOSE_CURLY_BRACKET     : [\n]*'}';
-OPEN_BRACKET            : '['[\n]*;
-CLOSE_BRACKET           : [\n]*']';
-COMMA_SEPERATOR         : [\n]*[,][\n]*;
+OPEN_CURLY_BRACKET      : '{'[ \n]*;
+CLOSE_CURLY_BRACKET     : [ \n]*'}';
+OPEN_BRACKET            : '['[ \n]*;
+CLOSE_BRACKET           : [ \n]*']';
+COMMA_SEPERATOR         : [ \n]*[,][ \n]*;
 EnvVarLiteral           : '$$' [0-9]+ ' '*;
 VAR                     : [$][a-zA-Z0-9]+ ' '*;
 FUNCTION                : [.][a-zA-Z0-9]+ ' '*;
