@@ -35,15 +35,17 @@ singleExpression :
     | objectLiteral;
 
 
-shortFn : '(' (variable (COMMA_SEPERATOR variable)*)? ')' '=>' action;
+shortFn : '(' ( (variable (COMMA_SEPERATOR variable)*) | variableList )? ')' '=>' action;
 // variable : VAR varParams? ( varFunction varParams? ) *;
 variable : VAR;
-varFunction : FUNCTION;
+variableList : '...'VAR;
+// varFunction : FUNCTION;
 varParams    : '(' singleExpression* ')';
 literal
     : NullLiteral | BooleanLiteral
     | StringLiteral | TemplateStringLiteral
-    | DecimalLiteral | EnvVarLiteral;
+    | DecimalLiteral | EnvVarLiteral
+    | JS_OBJECT;
 symbol : SYMBOL;
     
 optName : WORD ;
@@ -72,7 +74,9 @@ CLOSE_BRACKET           : [ \n]*']';
 COMMA_SEPERATOR         : [ \n]*[,][ \n]*;
 EnvVarLiteral           : '$$' [0-9]+ ' '*;
 VAR                     : [$][a-zA-Z0-9]+ ' '*;
-FUNCTION                : [.][a-zA-Z0-9]+ ' '*;
+JS_OBJECT               : 'String' | 'Number' | 'Object' | 'Function'
+                        | 'Date' | 'Array' | 'Error' | 'RegExp';
+// FUNCTION                : [.][a-zA-Z0-9]+ ' '*;
 
 COMMENT : ';' ~[\r\n]* -> channel(HIDDEN);
 

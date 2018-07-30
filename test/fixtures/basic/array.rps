@@ -1,7 +1,9 @@
 log 'something'
 log funny 'something' | as 'value'
 log $val
+log is String $val
 log ($val)=>echo $vaal
+log (...$args)=>echo $args
 log {
      a: 1,
      b : 2

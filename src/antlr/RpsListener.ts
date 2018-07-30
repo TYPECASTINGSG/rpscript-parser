@@ -157,8 +157,13 @@ setTimeout(main, 100);
   }
 
   public exitShortFn(ctx:ShortFnContext) : void {
-    let params = ctx.variable().map(x=>x.text);
-    let val = '('+params.join(',')+') => ' + this.parseTreeProperty.get(ctx.action());
+    let val = '';
+    if(ctx.variableList()) {
+      val = '('+ctx.variableList().text+') => ' + this.parseTreeProperty.get(ctx.action()); 
+    }else {
+      let params = ctx.variable().map(x=>x.text);
+      val = '('+params.join(',')+') => ' + this.parseTreeProperty.get(ctx.action());
+    }
     
     this.parseTreeProperty.set(ctx,val);
   }
