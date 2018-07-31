@@ -41,7 +41,8 @@ readonly runSect:string = `
 
 $CONTEXT.event.on ('action', (...params) => {
     let evt = params[2];
-    if(evt === 'end') $CONTEXT.$RESULT = params[3];
+    if(evt === 'end') {$CONTEXT.$RESULT = params[3]; $CONTEXT.$ERROR = null;}
+    if(evt === 'error') $CONTEXT.$ERROR = params[3];
 
     module.exports.emit('action',params);
 });
@@ -174,6 +175,7 @@ setTimeout(main, 100);
     let val = ctx.text;
     if(ctx.TemplateStringLiteral()) {
       val = val.replace(new RegExp('[$]RESULT', 'g'), '$CONTEXT.$RESULT');
+      val = val.replace(new RegExp('[$]ERROR', 'g'), '$CONTEXT.$ERROR');
     }
     if(ctx.EnvVarLiteral()) {
       val = val.substr(2);
@@ -313,6 +315,7 @@ setTimeout(main, 100);
     let parsedVar = this.hasShortFnParent(ctx) ? variable : "$CONTEXT.variables."+variable;
 
     if(ctx.text.trim().startsWith('$RESULT')) variable = '$CONTEXT.'+variable;
+    else if(ctx.text.trim().startsWith('$ERROR')) variable = '$CONTEXT.'+variable;
     else variable = parsedVar;
 
     return variable;
