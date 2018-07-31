@@ -17,9 +17,26 @@ export class ErrorCollectorListener implements ANTLRErrorListener<any> {
       line: number, charPositionInLine: number, 
       msg: string, e: RecognitionException): void {
         
-        console.error("SYNTAX ERROR : "+e);
-        console.error(msg+' , '+line+' , '+charPositionInLine);
-        // console.error(offendingSymbol);
+        console.error("Problem encountered :"+msg);
+        
+        this.underlineError(recognizer,offendingSymbol,line,charPositionInLine);
+        
+    }
+
+    underlineError (recognizer, offendingToken,line, pos) {
+      let tokens = recognizer.inputStream;
+      // console.log(tokens.tokenSource);
+      let input = tokens.tokenSource.inputStream.toString();
+      let lines = input.split('\n');
+      let errorLine = lines[line-1];
+
+      let start = offendingToken.startIndex;
+      let stop = offendingToken.stopIndex;
+
+      console.log(errorLine);
+      for(var i=0;i<pos;i++)process.stdout.write(" ");
+      if(start>=0 && stop>=0) for(var i:number=start;i<stop+1;i++) process.stdout.write("^");
+      console.log('');
     }
   
   }
