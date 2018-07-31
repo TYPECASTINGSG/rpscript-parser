@@ -125,8 +125,9 @@ setTimeout(main, 100);
 
   public enterAction(ctx:ActionContext) : void {
     if(!this.skipKeywordCheck){
-      if(!this.keywordMgr.isValidKeyword(ctx.WORD().text))
-        throw new InvalidKeywordException(ctx);
+      let recommendedKW = this.keywordMgr.isValidKeyword(ctx.WORD().text);
+      if(recommendedKW)
+        throw new InvalidKeywordException(ctx,recommendedKW);
     }
 
     this.content.verbs.push(ctx.WORD().text.trim());

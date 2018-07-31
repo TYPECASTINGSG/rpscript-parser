@@ -1,7 +1,7 @@
 import ConfigStore from 'configstore';
 import{RpsActionModel, RpsModuleModel,RpsDefaultModel} from 'rpscript-interface';
 import * as R from '../../lib/ramda.min';
-
+import didyoumean2 from 'didyoumean2'
 
 export class KeywordsMgr {
     readonly CONFIG_NAME = "rpscript";
@@ -95,7 +95,7 @@ export class KeywordsMgr {
         return actionConfigs;
     }
 
-    isValidKeyword (keyword:string) : boolean {
+    isValidKeyword (keyword:string) : string {
         let moduleName = '',word = '';
         if(keyword.split('.').length === 2){
             moduleName = keyword.split('.')[0];
@@ -104,11 +104,21 @@ export class KeywordsMgr {
 
         if(moduleName) {
             let mod = this.configStore.get(moduleName);
-            return !!mod.actions[word];
+            return !!mod.actions[word] ? undefined : this.getRecommended(keyword);
         }else {
             let deflt = this.configStore.get('$DEFAULT');
-            return !!deflt[word];
+            return !!deflt[word] ? undefined : this.getRecommended(keyword);
         }
+    }
+    getRecommended(kw) : string {
+        let key = R.keys(this.getDefaultActions());
+        let outputs = didyoumean2(kw,key);
+        let output = '_';
+        
+        if(typeof outputs === 'string')output = outputs;
+        else if(Array.isArray(outputs)) output = outputs[0];
+        
+        return output;
     }
 
     getKeywordsModules (keywords:string[]) : Array<string> {
