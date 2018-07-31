@@ -41,7 +41,7 @@ readonly runSect:string = `
 
 $CONTEXT.event.on ('action', (...params) => {
     let evt = params[2];
-    if(evt === 'end') {$CONTEXT.$RESULT = params[3]; $CONTEXT.$ERROR = null;}
+    if(evt === 'end') {$CONTEXT.$RESULT = params[3];}
     if(evt === 'error') $CONTEXT.$ERROR = params[3];
 
     module.exports.emit('action',params);

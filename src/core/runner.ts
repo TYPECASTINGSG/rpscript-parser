@@ -104,7 +104,7 @@ export class Runner extends EventEmitter{
         
         this.setupModulesContext(context['$CONTEXT']); //calling modules' setup lifecycle
 
-        await _eval(output,context,true);
+        await _eval(output,fileName,context,true);
     }
 
     private async transpile(filepath:string, filecontent:string):Promise<TranspileContent>{
@@ -120,7 +120,7 @@ export class Runner extends EventEmitter{
         
         this.setupModulesContext(context['$CONTEXT']); //calling modules' setup lifecycle
 
-        this.runnerListener = await _eval(tsContent,context,true);
+        this.runnerListener = await _eval(tsContent,'rpscript',context,true);
 
         this.runnerListener.on(Runner.START_EVT, (...params) => this.emit(Runner.START_EVT,params) );
         this.runnerListener.on(Runner.END_EVT, (...params) => this.emit(Runner.END_EVT,params) );
