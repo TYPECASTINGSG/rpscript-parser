@@ -5,9 +5,9 @@ program : sourceElements? EOF ;
 sourceElements : statement+ ;
 
 statement
-    : singleAction NL
-    | pipeActions NL
-    | comment NL
+    : singleAction (NL | EOF)
+    | pipeActions (NL | EOF)
+    | comment (NL | EOF)
     | NL;
 
 statementList : statement+;
