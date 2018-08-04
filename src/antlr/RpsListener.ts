@@ -298,15 +298,30 @@ setTimeout(main, 100);
     return isFnParent;
   }
 
-  private parseOpt (opts:OptContext[]):string{
+  private parseOpt (opts:OptContext[]):any{
     let obj = {};
-    R.forEach(x => {
-        let text = eval(x.literal().text);
+    R.forEach(opt => {
+      let x = opt.optValue();
+      let text = "";
+
+      if(x.literal()){
+        let res = this.parseTreeProperty.get(x.literal());
+
+        if(x.literal().EnvVarLiteral()) text = res;
+        else text = eval(res);
+      }
+      else if (x.variable()){
+        text = this.parseTreeProperty.get(x.variable());
+      }else {}
         
-        obj[x.optName().text] = text;
+      obj[opt.optName().text] = text;
     } , opts);
 
-    return JSON.stringify(obj);
+
+    let output = JSON.stringify(obj);
+    output = output.replace(/(\"[$].*\")+/g, function(val){ return val.replace(/\"/g,"");});
+
+    return output;
   }
 
   private parseVar (ctx:VariableContext) :string {

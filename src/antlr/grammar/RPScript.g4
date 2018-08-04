@@ -23,7 +23,7 @@ param : singleExpression;
 // param : singleExpression | literal | variable | anonFn | symbol | action;
 
 optList : opt*;
-opt   : '--' optName ('='literal)?;
+opt   : '--' optName ('='optValue)?;
 
 singleExpression :                                                                    
     literal                                               
@@ -44,11 +44,12 @@ varParams    : '(' singleExpression* ')';
 literal
     : NullLiteral | BooleanLiteral
     | StringLiteral | TemplateStringLiteral
-    | DecimalLiteral | EnvVarLiteral
-    | JS_OBJECT;
+    | DecimalLiteral | JS_OBJECT | EnvVarLiteral;
 symbol : SYMBOL;
     
 optName : WORD ;
+optValue : literal | variable;
+
 objectLiteral
     : OPEN_CURLY_BRACKET (propertyAssignment (COMMA_SEPERATOR propertyAssignment)*)? COMMA_SEPERATOR? CLOSE_CURLY_BRACKET;
 
