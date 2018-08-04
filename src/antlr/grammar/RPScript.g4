@@ -16,7 +16,7 @@ pipeActions : action PIPE action;
 singleAction : action;
 comment : COMMENT;
 
-action : WORD paramList optList | '(' WORD paramList optList ')' ;
+action : WORD optList paramList | '(' WORD optList paramList ')' ;
 
 paramList : param*;
 param : singleExpression;
