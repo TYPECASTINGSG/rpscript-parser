@@ -1,0 +1,4 @@
+request "http://en.wikipedia.org/wiki/George_Washington"
+cheerio $RESULT 'p' | as 'washington'
+
+selector $washington Text

@@ -222,6 +222,10 @@ setTimeout(main, 100);
       this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.shortFn()) );
     }
 
+    else if(ctx.symbol && ctx.symbol()) {
+      this.parseTreeProperty.set( ctx, this.parseTreeProperty.get(ctx.symbol()) );
+    }
+
     else
       this.parseTreeProperty.set(ctx,ctx.text);
   }
